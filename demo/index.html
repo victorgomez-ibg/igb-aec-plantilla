@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#05070d">
+<title>IGB AEC Suite · IGB-AEC-101</title>
+<link rel="icon" href="../shared/img/logo_igb.png">
+<link rel="stylesheet" href="../shared/css/aec-theme.css">
+<style>
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: max(36px, env(safe-area-inset-top)) var(--gutter) 48px; }
+  .top { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .kicker { font-family: var(--mono); font-weight: 700; font-size: .84rem; letter-spacing: .22em; color: var(--gold); }
+  .ev { margin-left: auto; font-family: var(--mono); font-size: .8rem; color: var(--muted); text-align: right; line-height: 1.6; }
+  .hero { margin: 44px 0 38px; max-width: 1120px; }
+  .hero h1 { font-size: clamp(2.3rem, 5.4vw, 4.2rem); line-height: 1.04; margin: 0; color: #fff; }
+  .hero h1 em { font-style: normal; color: var(--gold); }
+  .rule { width: 132px; height: 1px; margin: 26px 0 20px; background: linear-gradient(90deg, var(--gold), rgba(230, 193, 105, 0)); position: relative; }
+  .rule::before { content: ''; position: absolute; left: 0; top: -3px; width: 1px; height: 7px; background: var(--gold); }
+  .sub { color: var(--muted); font-size: clamp(1rem, 1.5vw, 1.15rem); margin: 0; max-width: 680px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 16px; }
+  @media (min-width: 1180px) { .grid { grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr)); } }
+  .tool {
+    position: relative; display: flex; flex-direction: column; gap: 12px; min-width: 0;
+    background: linear-gradient(180deg, rgba(15, 35, 80, .82), rgba(10, 24, 54, .82));
+    border: 1px solid var(--line); border-radius: 12px; padding: 22px 20px 20px;
+    color: inherit; text-decoration: none;
+    transition: border-color .18s ease, transform .18s ease;
+  }
+  .tool:hover, .tool:focus-visible { border-color: var(--gold); transform: translateY(-2px); outline: none; }
+  .tool:focus-visible { box-shadow: 0 0 0 3px rgba(230, 193, 105, .3); }
+  .tool .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .tool .num { font-family: var(--mono); font-weight: 700; font-size: 2.1rem; line-height: 1; color: var(--gold); letter-spacing: -.02em; }
+  .tool h2 { font-family: var(--sans); font-weight: 700; font-size: 1.28rem; margin: 6px 0 0; color: #fff; }
+  .tool p { margin: 0; color: var(--muted); font-size: .96rem; line-height: 1.45; }
+  .tool .hook { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--line); font-size: .92rem; color: var(--gold-bright); font-weight: 600; }
+
+  footer { margin-top: 40px; color: var(--muted); font-size: .86rem; line-height: 1.6; }
+  kbd { font-family: var(--mono); font-size: .8rem; color: var(--gold); border: 1px solid var(--line-strong); border-radius: 4px; padding: 1px 6px; background: var(--navy-2); }
+  footer .disclaimer { margin-top: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="kicker">IGB · AEC SUITE</span>
+    <div class="ev">Curso IGB-AEC-101 · IA y automatización para arquitectos e ingenieros<br>Kit IGB AEC · plantilla del participante</div>
+  </div>
+
+  <header class="hero">
+    <h1>Tu despacho, <em>trabajando</em> con IA</h1>
+    <div class="rule" aria-hidden="true"></div>
+    <p class="sub">Cinco herramientas, en el orden del curso. Datos de costos verificados; la IA aplica, no inventa.</p>
+  </header>
+
+  <nav class="grid" id="grid" aria-label="Herramientas"></nav>
+
+  <footer>
+    Atajo: la tecla con el número de cada herramienta (<kbd>1</kbd>, <kbd>2</kbd>…) la abre.<br>
+    Las claves de API se configuran una vez en Ajustes de cualquier herramienta y se guardan solo en este navegador.
+    <p class="disclaimer">Presupuestos paramétricos de referencia; imágenes conceptuales. Nada sustituye la validación del responsable del proyecto.</p>
+  </footer>
+</div>
+
+<script type="module">
+  import { TOOL_ICONS } from '../shared/js/icons.js';
+
+  const TOOLS = [
+    { n: 1, title: 'Presupuestador', url: '../tools/01-presupuestador/',
+      desc: 'Tipo de obra, m², acabados y zona → 30+ partidas con P.U., IVA y costo por m², en PDF.',
+      hook: 'De la idea a un presupuesto de referencia en minutos.' },
+    { n: 2, title: 'Visualizador', url: '../tools/02-visualizador/',
+      desc: 'Describe la casa como te la pidió el cliente → planta acotada + render de fachada.',
+      hook: 'El cliente ve su casa en la primera reunión.' },
+    { n: 3, title: 'Propuestas', url: '../tools/03-propuestas/',
+      desc: 'Cliente, alcance y monto → propuesta comercial completa en PDF.',
+      hook: 'El despacho que cotiza primero gana.' },
+    { n: 4, title: 'Contenido', url: '../tools/04-contenido/',
+      desc: 'Una obra terminada + 1 foto → LinkedIn, carrusel, portafolio y 3 renders.',
+      hook: 'Cada obra que terminas trae la siguiente.' },
+    { n: 5, title: 'Factibilidad', url: '../tools/05-factibilidad/',
+      desc: 'Terreno + uso de suelo → cuánto puedes construir, cajones y veredicto CUMPLE/NO CUMPLE.',
+      hook: 'Sabes si el proyecto cabe antes de dibujarlo.' },
+    // ── HUECO PARA LA HERRAMIENTA 06 ── (ver README: «Cómo agregar la tarjeta 06»)
+    // Descomenta, crea tools/06-<nombre>/index.html y ajusta título, descripción y gancho:
+    // { n: 6, title: 'Mi herramienta', url: '../tools/06-mi-herramienta/',
+    //   desc: 'Qué recibe → qué entrega.',
+    //   hook: 'Frase corta de valor.' },
+  ];
+
+  const grid = document.getElementById('grid');
+  grid.style.setProperty('--cols', TOOLS.length <= 5 ? TOOLS.length : 3);
+  for (const t of TOOLS) {
+    const num = String(t.n).padStart(2, '0');
+    const el = document.createElement('a');
+    el.className = 'tool';
+    el.href = t.url;
+    el.setAttribute('aria-keyshortcuts', String(t.n));
+    el.innerHTML = `<div class="head"><span class="num">${num}</span><span class="icon-tile" aria-hidden="true">${TOOL_ICONS[num] ?? ''}</span></div>
+      <h2>${t.title}</h2><p>${t.desc}</p><span class="hook">${t.hook}</span>`;
+    grid.appendChild(el);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target.matches('input, textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
+    const t = TOOLS.find((x) => String(x.n) === e.key);
+    if (t) location.href = t.url;
+  });
+</script>
+</body>
+</html>

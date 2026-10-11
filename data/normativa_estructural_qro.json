@@ -1,0 +1,47 @@
+{
+  "_meta": {"tier": 1, "advertencia_clave": "Querétaro NO tiene NTC propias"},
+  "zona_sismica_cfe": "B (moderada)",
+  "fuente_zona": "Manual de Obras Civiles CFE - Diseño por Sismo 2015; confirmado en tesis UAQ RI003998",
+  "normativa_aplicable": {
+    "principal": "Manual de Obras Civiles CFE (Diseño por Sismo / Diseño por Viento)",
+    "espectros": "PRODISIS",
+    "supletorio": "NTC del RCDF (CDMX) y ACI",
+    "nota": "El CICQ (presidente Sergio Camacho Hurtado) desarrolla manuales de viento, sismo-resistencia y mampostería con intención de elevarlos a NTC. NO adoptados formalmente al corte de esta investigación."
+  },
+  "ntc_cdmx_referencia": [
+    "NTC-Diseño y Construcción de Estructuras de Concreto",
+    "NTC-Mampostería",
+    "NTC-Acero",
+    "NTC-Cimentaciones",
+    "NTC-Diseño por Sismo",
+    "NTC-Criterios y Acciones de Diseño Estructural"
+  ],
+  "reglamento_municipal_qro": {
+    "titulo_septimo": "Clasificación de construcciones",
+    "apartado_segundo_art_118": "Seguridad Estructural",
+    "coeficiente_sismico_arts": [120, 121, 151],
+    "rampas": "Pendiente ≤8% con pasamanos",
+    "viento": "Diseño para periodos de retorno de 50 y 200 años",
+    "vivienda_minima": "Al menos un cuarto habitable + cocina, regadera, excusado, lavabo",
+    "art_291": "Requisitos de registro/renovación de DRO por Colegio",
+    "url": "https://municipiodequeretaro.gob.mx/municipio/repositorios/transparencia/a66/2T25/sdu/Reglamentodeconstruccionparaelmunicipiodequeretaro.pdf"
+  },
+  "otros_municipios": ["Corregidora y San Juan del Río tienen reglamentos separados"],
+  "dro_queretaro": {
+    "requisitos": ["Persona física", "Título: Ing. Civil, Ing. Arquitecto o Arquitecto", "Colegiado en Querétaro", "Registro ante Dirección de Desarrollo Urbano / Secretaría de Obras Públicas", "Cédula profesional vigente"],
+    "tipo_A": "≥5 años de experiencia verificable; firma responsivas para estructuras >10m de altura",
+    "documentos_que_firma": ["Carta responsiva DRO", "Solicitud de licencia de construcción", "Dictamen estructural", "Dictamen/número oficial", "Aviso de terminación de obra"],
+    "corresponsables": ["Seguridad Estructural (CSE)", "Instalaciones (CI)", "Diseño Urbano y Arquitectónico (CDUyA)"]
+  },
+  "dictamen_estructural_secciones": [
+    "1. Datos Generales (inmueble, propietario, fecha, profesional con cédula y registro DRO/CSE, firma autógrafa)",
+    "2. Objetivo y Alcance",
+    "3. Antecedentes / historial de rehabilitaciones",
+    "4. Inspección (visual, croquis, fotografías)",
+    "5. Análisis del sistema estructural",
+    "6. Evaluación de daños existentes",
+    "7. Conclusiones",
+    "8. Recomendaciones"
+  ],
+  "clasificacion_danos": ["Grietas estructurales vs no estructurales", "Asentamientos", "Corrosión del armado", "Pandeo", "Fallas por cortante en concreto"]
+}

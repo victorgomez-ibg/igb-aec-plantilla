@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Presupuestador paramétrico · IGB AEC Suite</title>
+<link rel="icon" href="../../shared/img/logo_igb.png">
+<link rel="stylesheet" href="../../shared/css/aec-theme.css">
+<style>
+  .origen { font-size: .62rem; }
+  .desc-cell { min-width: 260px; }
+  .res-head { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+  .res-head h2 { margin: 0; }
+  .scale { position: relative; height: 10px; border-radius: 999px; background: var(--surface-sunken); border: 1px solid var(--line); margin: 26px 0 22px; }
+  .scale .band { position: absolute; top: -1px; bottom: -1px; background: var(--accent-wash); border: 1px solid var(--line-strong); border-radius: 999px; }
+  .scale .mark { position: absolute; top: -20px; transform: translateX(-50%); font-family: var(--mono); font-size: .68rem; white-space: nowrap; }
+  .scale .mark::after { content: ''; position: absolute; left: 50%; top: 16px; width: 2px; height: 16px; background: currentColor; }
+  .scale .mark.below { top: 18px; }
+  .scale .mark.below::after { top: -14px; }
+  .progress-note { font-family: var(--mono); font-size: .8rem; color: var(--text-dim); }
+  .sources td { font-size: .8rem; }
+  #result table.data td.num { font-size: .78rem; }
+  table.data tr.subgroup td { font-family: var(--mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding-top: 10px; }
+  table.data tr.sys-total td { font-weight: 700; color: var(--gold-bright); border-bottom: 1px solid var(--line-strong); background: rgba(230, 193, 105, .05); }
+  table.data.resumen .bar-cell { width: 34%; min-width: 90px; }
+  table.data.resumen .bar { display: block; height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--gold-deep), var(--gold)); }
+  @media print { table.data.resumen .bar { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+</style>
+</head>
+<body>
+<div id="header"></div>
+
+<main class="container page stack">
+  <section id="presets" aria-label="Ejemplos precargados"></section>
+  <div id="top-banners" class="stack"></div>
+
+  <div class="layout-sidebar">
+    <!-- ================= FORM ================= -->
+    <form id="form" class="card no-print" autocomplete="off">
+      <div class="card-title"><h2 style="margin:0">Datos de la obra</h2><span class="spacer"></span>
+        <button type="button" class="btn btn-sm btn-ghost" id="btn-example">Cargar ejemplo</button>
+      </div>
+
+      <div class="field">
+        <label for="tipo">Tipo de obra</label>
+        <select id="tipo" name="tipo" required></select>
+      </div>
+
+      <div class="grid-2" style="gap:12px">
+        <div class="field">
+          <label for="superficie">Superficie construida</label>
+          <input id="superficie" name="superficie" type="number" min="10" max="100000" step="1" inputmode="decimal" required placeholder="m²">
+          <span class="hint">m² totales, todos los niveles</span>
+        </div>
+        <div class="field">
+          <label for="niveles">Número de niveles</label>
+          <input id="niveles" name="niveles" type="number" min="1" max="20" step="1" value="1" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <span id="acabados-label" style="font-size:.85rem;font-weight:550;color:var(--heading)">Nivel de acabados</span>
+        <div class="segmented" role="radiogroup" aria-labelledby="acabados-label" id="acabados"></div>
+      </div>
+
+      <div class="field">
+        <label for="zona">Zona de Querétaro</label>
+        <select id="zona" name="zona" required></select>
+        <span class="hint">Se usa para comparar contra el valor de mercado; no modifica el costo. Las zonas marcadas "ref. direccional" son referencias no oficiales.</span>
+      </div>
+
+      <div class="field">
+        <label for="notas">Descripción adicional <span class="dim">(opcional)</span></label>
+        <textarea id="notas" name="notas" rows="3" maxlength="1200" placeholder="Ej. 3 recámaras, 2.5 baños, losa maciza, cochera para 2 autos, terreno 10×20 m"></textarea>
+      </div>
+
+      <button class="btn btn-primary btn-block" id="btn-generate" type="submit">Generar presupuesto</button>
+      <p class="disclaimer" id="form-disclaimer"></p>
+    </form>
+
+    <!-- ================= RESULT ================= -->
+    <section id="result-area" aria-live="polite">
+      <div class="empty" id="empty">
+        <div class="big">$ / m²</div>
+        <p style="margin:0">Captura los datos de la obra para generar un presupuesto paramétrico con precios verificados de Querétaro.</p>
+      </div>
+      <div id="result" hidden></div>
+    </section>
+  </div>
+</main>
+
+<script type="module">
+import { loadData, freshness, tierBadge, rangeOf } from '../../shared/js/data.js';
+import { generateJSON, hasClaudeKey, AECError } from '../../shared/js/claude-client.js';
+import { TIPOS_OBRA, ACABADOS, zonasDisponibles, calcularPresupuesto } from '../../shared/js/calculo.js';
+import { DISCLAIMER, SCHEMA, EXAMPLE, PRESETS, buildSystem, buildPrompt } from './prompt.js';
+import { presetPicker } from '../../shared/js/presets.js';
+import {
+  appHeader, openSettings, toast, banner, busy, fmt, escapeHtml, exportExcel, slug,
+} from '../../shared/js/ui-components.js';
+import { createPdf } from '../../shared/js/pdf-export.js';
+
+// ==========================================================================
+// Page
+// ==========================================================================
+
+const $ = (sel) => document.querySelector(sel);
+appHeader($('#header'), { num: '01', title: 'Presupuestador paramétrico' });
+$('#form-disclaimer').textContent = DISCLAIMER;
+
+const data = await loadData('precios', 'costosM2', 'fianzas');
+const zonas = zonasDisponibles(data.costosM2);
+let fallbackScope = null; // pre-generated scope for the example (modo respaldo)
+let current = null;       // last result
+
+// ---- populate form ----
+$('#tipo').innerHTML = Object.entries(TIPOS_OBRA)
+  .map(([k, v]) => `<option value="${k}">${v.label}${v.sinReferencia ? ' — sin referencia verificada' : ''}</option>`).join('');
+{
+  const GRUPOS = [['metro', 'Querétaro Metro'], ['semidesierto', 'Semidesierto']];
+  const opt = (z) => `<option value="${z.key}">${escapeHtml(z.label)}${z.direccional ? ' · ref. direccional' : ''}</option>`;
+  $('#zona').innerHTML = GRUPOS.map(([g, label]) => `<optgroup label="${label}">${zonas.filter((z) => z.grupo === g).map(opt).join('')}</optgroup>`).join('')
+    + zonas.filter((z) => z.grupo === 'otra').map(opt).join('');
+}
+$('#acabados').innerHTML = Object.entries(ACABADOS)
+  .map(([k, v], i) => `<label><input type="radio" name="acabados" value="${k}" ${i === 1 ? 'checked' : ''}><span>${v.label}</span></label>`).join('');
+
+// ---- top banners: staleness + data quality ----
+{
+  const out = [];
+  const f = freshness(data.precios._meta);
+  if (f.stale) {
+    out.push(banner('warn', `<strong>Precios desactualizados.</strong> Los precios de materiales son de ${f.fecha} (hace ${f.ageMonths} meses; se actualizan cada trimestre). Acero y cobre se mueven con aranceles EE.UU.–México: valide antes de usar.`));
+  }
+  $('#top-banners').innerHTML = out.join('');
+}
+
+function readForm() {
+  const fd = new FormData($('#form'));
+  const zona = fd.get('zona');
+  return {
+    tipo: fd.get('tipo'),
+    superficie: Number(fd.get('superficie')),
+    niveles: Math.max(1, Math.round(Number(fd.get('niveles')) || 1)),
+    acabados: fd.get('acabados'),
+    zona,
+    zonaLabel: zonas.find((z) => z.key === zona)?.label ?? zona,
+    notas: String(fd.get('notas') || '').trim(),
+  };
+}
+
+function fillForm(p) {
+  $('#tipo').value = p.tipo;
+  $('#superficie').value = p.superficie;
+  $('#niveles').value = p.niveles;
+  $('#zona').value = p.zona;
+  $('#notas').value = p.notas;
+  document.querySelector(`input[name=acabados][value=${p.acabados}]`).checked = true;
+}
+
+const isExample = (p) => ['tipo', 'superficie', 'niveles', 'acabados', 'zona', 'notas'].every((k) => String(p[k]) === String(EXAMPLE[k]));
+
+const picker = presetPicker($('#presets'), { presets: PRESETS, onSelect: (p) => { fillForm(p.data); $('#btn-generate').focus({ preventScroll: true }); toast(`Ejemplo cargado: ${p.title}. Presiona Generar.`); } });
+$('#btn-example').addEventListener('click', () => picker.select(PRESETS[0].id));
+
+$('#form').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const params = readForm();
+  if (!(params.superficie >= 10)) { toast('Captura una superficie de al menos 10 m²', 'error'); return; }
+  if (!hasClaudeKey()) {
+    toast('Primero guarda tu API key de Anthropic');
+    if (!(await openSettings())) return;
+  }
+
+  const restore = busy($('#btn-generate'), 'Analizando alcance…');
+  showLoading();
+  try {
+    const { data: scope } = await generateJSON({
+      system: buildSystem(data.precios),
+      prompt: buildPrompt(params),
+      schema: SCHEMA,
+      effort: 'medium',
+      onProgress: ({ chars }) => { const el = $('#progress-chars'); if (el) el.textContent = `${chars.toLocaleString('es-MX')} caracteres recibidos`; },
+    });
+    render(params, scope, 'claude');
+  } catch (err) {
+    const msg = err instanceof AECError ? err.message : 'No se pudo generar el presupuesto.';
+    if (isExample(params)) {
+      try {
+        fallbackScope ??= await fetch('ejemplo-alcance.json').then((r) => r.json());
+        render(params, fallbackScope, 'respaldo');
+        toast(`${msg} Se muestra el alcance de ejemplo pre-generado.`, 'error');
+        return;
+      } catch { /* fall through */ }
+    }
+    showError(msg);
+    toast(msg, 'error');
+  } finally {
+    restore();
+  }
+});
+
+// ==========================================================================
+// Rendering
+// ==========================================================================
+
+let timer;
+function showLoading() {
+  $('#empty').hidden = true;
+  const res = $('#result');
+  res.hidden = false;
+  const t0 = Date.now();
+  res.innerHTML = `<div class="empty"><span class="scan" aria-hidden="true"></span><div class="scan-label">Generando…</div>
+    <p><strong>Claude está definiendo el catálogo de conceptos…</strong></p>
+    <p class="progress-note"><span id="progress-secs">0 s</span> · <span id="progress-chars">pensando</span></p>
+    <p class="dim" style="font-size:.8rem;margin:0">Los precios se aplican después, desde los datos verificados de IGB.</p></div>`;
+  clearInterval(timer);
+  timer = setInterval(() => {
+    const el = $('#progress-secs');
+    if (!el) return clearInterval(timer);
+    el.textContent = `${Math.round((Date.now() - t0) / 1000)} s`;
+  }, 500);
+}
+
+function showError(msg) {
+  clearInterval(timer);
+  $('#result').innerHTML = `<div class="reveal">${banner('danger', `<strong>No se pudo generar.</strong> ${escapeHtml(msg)}`)}</div>`;
+}
+
+const ORIGEN_BADGE = {
+  verificado: '<span class="badge badge-tier2 origen" title="P.U. verificado: CEICO-CMIC/INEGI jul-2026 (punto medio del rango)">verificado</span>',
+  parametrico: '<span class="badge badge-tier3 origen" title="P.U. paramétrico: distribución del costo/m² verificado según peso relativo de la partida">paramétrico</span>',
+};
+
+function render(params, scope, source) {
+  clearInterval(timer);
+  const r = calcularPresupuesto({ params, scope, precios: data.precios, costosM2: data.costosM2, ivaPct: data.fianzas.iva });
+  current = { params, scope, r, source, folio: folio() };
+  const t = r.totales;
+  const mercado = r.comparacion.mercado;
+
+  // Presentation: the 15 calc chapters grouped into 9 construction systems.
+  const SISTEMAS = [
+    ['Preliminares', ['preliminares']],
+    ['Cimentación', ['cimentacion']],
+    ['Estructura', ['estructura']],
+    ['Albañilería', ['albanileria']],
+    ['Instalación hidrosanitaria', ['instalacion_hidraulica', 'instalacion_sanitaria']],
+    ['Instalación eléctrica', ['instalacion_electrica']],
+    ['Acabados', ['acabados_pisos', 'acabados_muros', 'acabados_plafones', 'pintura']],
+    ['Cancelería / carpintería', ['canceleria', 'carpinteria', 'herreria']],
+    ['Limpieza y varios', ['limpieza']],
+  ].map(([label, keys]) => {
+    const caps = r.capitulos.filter((c) => keys.includes(c.key));
+    const items = caps.flatMap((c) => c.items);
+    return { label, caps, n: items.length, importe: caps.reduce((a, c) => a + c.importe, 0) };
+  }).filter((g) => g.n > 0);
+  const sinSistema = r.capitulos.filter((c) => !SISTEMAS.some((g) => g.caps.includes(c)));
+  if (sinSistema.length) SISTEMAS.push({ label: 'Otros', caps: sinSistema, n: sinSistema.reduce((a, c) => a + c.items.length, 0), importe: sinSistema.reduce((a, c) => a + c.importe, 0) });
+
+  const rowsOf = (items) => items.map((l) => `<tr>
+      <td class="num dim">${l.n}</td>
+      <td class="desc-cell">${escapeHtml(l.descripcion)}</td>
+      <td>${ORIGEN_BADGE[l.origen]}</td>
+      <td>${escapeHtml(l.unidad)}</td>
+      <td class="num">${fmt.num(l.cantidad)}</td>
+      <td class="num" ${l.rango ? `title="Rango verificado: ${rangeOf(l.rango)}"` : ''}>${fmt.money(l.pu)}</td>
+      <td class="num">${fmt.money(l.importe)}</td>
+    </tr>`).join('');
+  const rows = SISTEMAS.map((g, gi) => `
+    <tr class="group"><td colspan="7">${String(gi + 1).padStart(2, '0')} · ${escapeHtml(g.label)} <span class="dim" style="text-transform:none;letter-spacing:0;font-weight:400">· ${g.n} partidas</span></td></tr>
+    ${g.caps.map((c) => `${g.caps.length > 1 ? `<tr class="subgroup"><td></td><td colspan="6">${escapeHtml(c.label)}</td></tr>` : ''}${rowsOf(c.items)}`).join('')}
+    <tr class="sys-total"><td colspan="6">Subtotal ${escapeHtml(g.label)}</td><td class="num">${fmt.money(g.importe)}</td></tr>`).join('');
+  const resumen = SISTEMAS.map((g) => {
+    const pct = t.subtotal > 0 ? (g.importe / t.subtotal) * 100 : 0;
+    return `<tr><td>${escapeHtml(g.label)}</td><td class="num">${g.n}</td><td class="bar-cell"><span class="bar" style="width:${pct.toFixed(1)}%"></span></td><td class="num">${fmt.pct(pct)}</td><td class="num">${fmt.money0(g.importe)}</td><td class="num">${fmt.money0(g.importe / params.superficie)}</td></tr>`;
+  }).join('');
+
+  // cost/m² scale: construction cost range vs market value
+  const scaleMax = Math.max(mercado.max ?? mercado.medio, t.costoM2) * 1.08;
+  const pos = (v) => `${Math.min(100, (v / scaleMax) * 100).toFixed(2)}%`;
+  const band = mercado.min != null
+    ? `<div class="band" style="left:${pos(mercado.min)};width:calc(${pos(mercado.max)} - ${pos(mercado.min)})" title="Valor de mercado de la zona"></div>`
+    : '';
+
+  $('#result').innerHTML = `
+    <div class="stack reveal">
+      ${source === 'respaldo' ? banner('warn', '<strong>Modo respaldo.</strong> Alcance de ejemplo pre-generado (la API no respondió). Los precios sí se calcularon en vivo con los datos verificados.') : ''}
+      <div class="res-head">
+        <div>
+          <div class="eyebrow">${escapeHtml(current.folio)} · ${fmt.date()}</div>
+          <h2>${escapeHtml(TIPOS_OBRA[params.tipo].label)} · ${fmt.num(params.superficie)} m² · ${ACABADOS[params.acabados].label}</h2>
+          <div class="dim" style="font-size:.85rem">${escapeHtml(params.zonaLabel)} · ${params.niveles} nivel${params.niveles > 1 ? 'es' : ''}</div>
+        </div>
+        <span class="spacer"></span>
+        <div class="row no-print">
+          <button class="btn btn-primary" id="btn-pdf" type="button">Descargar PDF</button>
+          <button class="btn" id="btn-xlsx" type="button">Exportar a Excel</button>
+          <button class="btn btn-ghost" id="btn-new" type="button">Nueva estimación</button>
+        </div>
+      </div>
+
+      ${r.avisos.map((a) => banner(a.nivel, escapeHtml(a.texto))).join('')}
+
+      <div class="stats">
+        <div class="stat"><div class="label">Total con IVA</div><div class="value">${fmt.money0(t.total)}</div><div class="sub">${fmt.money0(t.costoM2ConIva)} / m² con IVA</div></div>
+        <div class="stat"><div class="label">Subtotal</div><div class="value">${fmt.money0(t.subtotal)}</div><div class="sub">IVA ${t.ivaPct}%: ${fmt.money0(t.iva)}</div></div>
+        <div class="stat"><div class="label">Costo de construcción / m²</div><div class="value">${fmt.money0(t.costoM2)}</div><div class="sub">Referencia ${fmt.money0(r.objetivo.min)}–${fmt.money0(r.objetivo.max)} ${tierBadge(r.objetivo.tier)}</div></div>
+        <div class="stat"><div class="label">Valor de mercado / m² · ${escapeHtml(params.zonaLabel)}</div><div class="value">${fmt.money0(mercado.medio)}</div><div class="sub">${mercado.min != null ? `Rango ${fmt.money0(mercado.min)}–${fmt.money0(mercado.max)}` : escapeHtml(mercado.fuente)} · no es costo</div>${mercado.direccional ? `<div style="margin-top:6px"><span class="badge badge-tier3" title="${escapeHtml(mercado.fuente)}">Referencia direccional, no oficial</span></div>` : ''}</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><h3 style="margin:0">Costo de construcción vs. valor de mercado de la zona</h3></div>
+        <div class="scale" role="img" aria-label="Costo de construcción ${fmt.money0(t.costoM2)} por m² frente a valor de mercado ${fmt.money0(mercado.medio)} por m²">
+          ${band}
+          <span class="mark" style="left:${pos(t.costoM2)};color:var(--accent)">Costo ${fmt.money0(t.costoM2)}</span>
+          <span class="mark below" style="left:${pos(mercado.medio)};color:var(--warn)">Mercado ${fmt.money0(mercado.medio)}</span>
+        </div>
+        <p class="dim" style="font-size:.82rem;margin:0">${(r.comparacion.ratio ?? 0) <= 1
+          ? `El costo de construcción representa el <strong>${fmt.pct((r.comparacion.ratio ?? 0) * 100, 0)}</strong> del valor de mercado de la zona (diferencia ${fmt.money0(r.comparacion.diferenciaM2)}/m², que incluye terreno, indirectos, utilidad y plusvalía).`
+          : `En esta zona el costo de construir obra nueva (<strong>${fmt.money0(t.costoM2)}/m²</strong>) queda <strong>por encima</strong> del valor de mercado de referencia (${fmt.money0(mercado.medio)}/m²): la reventa local no recupera el costo de obra nueva con estos acabados.`} <strong>Valor de mercado ≠ costo de construcción.</strong>${mercado.direccional ? ` Fuente de la zona: ${escapeHtml(mercado.fuente)}.` : ''}</p>
+      </div>
+
+      <div class="card">
+        <h3>Alcance</h3>
+        <p>${escapeHtml(scope.resumen_alcance)}</p>
+        <div class="eyebrow" style="margin:8px 0 4px">Supuestos técnicos</div>
+        <ul style="margin:0;padding-left:18px">${scope.supuestos.map((s) => `<li>${escapeHtml(s)}</li>`).join('')}</ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><h3 style="margin:0">Resumen por sistema constructivo</h3><span class="spacer"></span><span class="eyebrow">${r.lineas.length} partidas · ${SISTEMAS.length} sistemas</span></div>
+        <div class="table-wrap" style="box-shadow:none">
+          <table class="data resumen">
+            <thead><tr><th>Sistema</th><th class="num">Partidas</th><th>Peso</th><th class="num">%</th><th class="num">Importe</th><th class="num">$/m²</th></tr></thead>
+            <tbody>${resumen}
+              <tr class="total"><td>Subtotal</td><td class="num">${r.lineas.length}</td><td></td><td class="num">100%</td><td class="num">${fmt.money0(t.subtotal)}</td><td class="num">${fmt.money0(t.costoM2)}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card-title" style="margin:8px 0 0"><h3 style="margin:0">Catálogo de conceptos por sistema</h3></div>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th class="num">#</th><th>Concepto</th><th>Origen P.U.</th><th>Unidad</th><th class="num">Cantidad</th><th class="num">P.U.</th><th class="num">Importe</th></tr></thead>
+          <tbody>
+            ${rows}
+            <tr class="total"><td colspan="6">Subtotal</td><td class="num">${fmt.money(t.subtotal)}</td></tr>
+            <tr class="total"><td colspan="6">IVA ${t.ivaPct}%</td><td class="num">${fmt.money(t.iva)}</td></tr>
+            <tr class="grand"><td colspan="6">Total</td><td class="num">${fmt.money(t.total)}</td></tr>
+            <tr class="total"><td colspan="6">Costo por m² (${fmt.num(params.superficie)} m²) · sin IVA / con IVA</td><td class="num">${fmt.money0(t.costoM2)} / ${fmt.money0(t.costoM2ConIva)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Fuentes de los números</h3>
+        <div class="table-wrap" style="box-shadow:none">
+          <table class="data sources">
+            <tbody>
+              <tr><td>P.U. verificados (suministros)</td><td>${escapeHtml(data.precios._meta.fuente)}, ${escapeHtml(data.precios._meta.fecha)} — punto medio del rango</td><td>${tierBadge(data.precios._meta.tier)}</td><td class="num">${fmt.money0(t.verificado)}</td></tr>
+              <tr><td>Costo de construcción / m²</td><td>${escapeHtml(r.objetivo.fuente)}</td><td>${tierBadge(r.objetivo.tier)}</td><td class="num">${fmt.money0(r.objetivo.valor)}/m²</td></tr>
+              <tr><td>Distribución paramétrica</td><td>Pesos relativos asignados por IA sobre el remanente del costo/m² verificado</td><td>${tierBadge(3)}</td><td class="num">${fmt.money0(t.parametrico)}</td></tr>
+              <tr><td>IVA</td><td>${escapeHtml(data.fianzas._meta.fuente)}</td><td>${tierBadge(data.fianzas._meta.tier)}</td><td class="num">${t.ivaPct}%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="disclaimer">${escapeHtml(DISCLAIMER)} Valor de mercado por zona: referencia 2025, no representa costo.</p>
+      </div>
+    </div>`;
+
+  $('#btn-pdf').addEventListener('click', () => downloadPdf().catch((e) => { console.error(e); toast('No se pudo generar el PDF', 'error'); }));
+  $('#btn-xlsx').addEventListener('click', () => downloadExcel().catch((e) => { console.error(e); toast('No se pudo exportar a Excel', 'error'); }));
+  $('#btn-new').addEventListener('click', () => {
+    current = null;
+    $('#result').hidden = true;
+    $('#empty').hidden = false;
+    $('#form').reset();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    $('#tipo').focus();
+  });
+  $('#result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function folio() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `PRES-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;
+}
+
+const origenTxt = (o) => (o === 'verificado' ? 'Verificado (T2)' : 'Paramétrico (T3)');
+
+async function downloadPdf() {
+  const { params, scope, r, folio: id } = current;
+  const t = r.totales;
+  const m = r.comparacion.mercado;
+  const pdf = await createPdf({
+    title: 'Presupuesto paramétrico',
+    subtitle: `${TIPOS_OBRA[params.tipo].label} · ${fmt.num(params.superficie)} m² · ${params.zonaLabel}, Querétaro`,
+    docId: id,
+    disclaimer: DISCLAIMER,
+  });
+  pdf.keyValues([
+    ['Tipo de obra', TIPOS_OBRA[params.tipo].label],
+    ['Fecha', fmt.date()],
+    ['Superficie', `${fmt.num(params.superficie)} m²`],
+    ['Niveles', params.niveles],
+    ['Acabados', ACABADOS[params.acabados].label],
+    ['Zona', `${params.zonaLabel}, Qro.`],
+  ]);
+  pdf.heading('Resumen');
+  pdf.table({
+    theme: 'plain',
+    body: [
+      ['Subtotal', fmt.money(t.subtotal)],
+      [`IVA ${t.ivaPct}%`, fmt.money(t.iva)],
+      ['Total', fmt.money(t.total)],
+      ['Costo de construcción / m² (sin IVA)', fmt.money(t.costoM2)],
+      [`Valor de mercado / m² ${params.zonaLabel} (referencia, no es costo)`, fmt.money(m.medio)],
+    ],
+    columnStyles: { 0: { cellWidth: 110 }, 1: { halign: 'right', fontStyle: 'bold' } },
+    styles: { fontSize: 9 },
+  });
+  if (r.avisos.length) {
+    pdf.heading('Avisos');
+    pdf.bullets(r.avisos.map((a) => a.texto), { size: 8.5 });
+  }
+  pdf.heading('Alcance');
+  pdf.paragraph(scope.resumen_alcance);
+  pdf.bullets(scope.supuestos, { size: 8.5 });
+
+  pdf.heading('Catálogo de conceptos');
+  const body = [];
+  const groupRows = new Set();
+  for (const c of r.capitulos) {
+    groupRows.add(body.length);
+    body.push([{ content: c.label.toUpperCase(), colSpan: 6 }, fmt.money(c.importe)]);
+    for (const l of c.items) {
+      body.push([l.n, l.descripcion, origenTxt(l.origen), l.unidad, fmt.num(l.cantidad), fmt.money(l.pu), fmt.money(l.importe)]);
+    }
+  }
+  pdf.table({
+    head: [['#', 'Descripción', 'Origen P.U.', 'Unidad', 'Cantidad', 'P.U.', 'Importe']],
+    body,
+    foot: [
+      [{ content: 'Subtotal', colSpan: 6 }, fmt.money(t.subtotal)],
+      [{ content: `IVA ${t.ivaPct}%`, colSpan: 6 }, fmt.money(t.iva)],
+      [{ content: 'TOTAL', colSpan: 6 }, fmt.money(t.total)],
+    ],
+    columnStyles: {
+      0: { cellWidth: 8, halign: 'right' }, 2: { cellWidth: 25 }, 3: { cellWidth: 14 },
+      4: { halign: 'right', cellWidth: 18 }, 5: { halign: 'right', cellWidth: 24 }, 6: { halign: 'right', cellWidth: 26 },
+    },
+    didParseCell: (d) => {
+      if (d.section === 'body' && groupRows.has(d.row.index)) {
+        d.cell.styles.fillColor = [232, 241, 245];
+        d.cell.styles.textColor = [27, 94, 126];
+        d.cell.styles.fontStyle = 'bold';
+        d.cell.styles.halign = d.column.index === 6 ? 'right' : 'left';
+      }
+      if ((d.section === 'foot' || d.section === 'head') && d.column.index >= 4) d.cell.styles.halign = 'right';
+    },
+  });
+
+  pdf.heading('Fuentes');
+  pdf.bullets([
+    `P.U. verificados: ${data.precios._meta.fuente}, ${data.precios._meta.fecha} (Tier 2, direccional; punto medio del rango). Solo material.`,
+    `Costo de construcción/m²: ${r.objetivo.fuente} (Tier 2).`,
+    'P.U. paramétricos: distribución del costo/m² verificado por peso relativo de cada partida (Tier 3, adaptación).',
+    `IVA ${t.ivaPct}%. Valor de mercado por zona: referencia 2025 (no representa costo de construcción).`,
+  ], { size: 8 });
+  pdf.save(`${slug(`presupuesto-${TIPOS_OBRA[params.tipo].label}-${params.superficie}m2`)}.pdf`);
+}
+
+async function downloadExcel() {
+  const { params, scope, r, folio: id } = current;
+  const t = r.totales;
+  const rows = [['Capítulo', '#', 'Descripción', 'Origen P.U.', 'Unidad', 'Cantidad', 'P.U. (MXN)', 'Importe (MXN)']];
+  for (const c of r.capitulos) {
+    for (const l of c.items) rows.push([c.label, l.n, l.descripcion, origenTxt(l.origen), l.unidad, l.cantidad, l.pu, l.importe]);
+    rows.push([`Subtotal ${c.label}`, '', '', '', '', '', '', c.importe]);
+  }
+  rows.push([], ['Subtotal', '', '', '', '', '', '', t.subtotal], [`IVA ${t.ivaPct}%`, '', '', '', '', '', '', t.iva], ['Total', '', '', '', '', '', '', t.total]);
+
+  const info = [
+    ['Folio', id], ['Fecha', fmt.date()],
+    ['Tipo de obra', TIPOS_OBRA[params.tipo].label], ['Superficie (m²)', params.superficie], ['Niveles', params.niveles],
+    ['Acabados', ACABADOS[params.acabados].label], ['Zona', params.zonaLabel], ['Descripción', params.notas],
+    [], ['Costo construcción / m² (sin IVA)', t.costoM2], ['Valor de mercado / m² zona (no es costo)', r.comparacion.mercado.medio],
+    [], ['Alcance', scope.resumen_alcance], ...scope.supuestos.map((s) => ['Supuesto', s]),
+    [], ...r.avisos.map((a) => ['Aviso', a.texto]),
+    [], ['Fuente P.U. verificados', `${data.precios._meta.fuente}, ${data.precios._meta.fecha} (Tier 2)`],
+    ['Fuente costo/m²', `${r.objetivo.fuente} (Tier 2)`], ['P.U. paramétricos', 'Distribución por peso relativo del costo/m² verificado (Tier 3)'],
+    [], ['Aviso legal', DISCLAIMER],
+  ];
+  await exportExcel(`${slug(`presupuesto-${TIPOS_OBRA[params.tipo].label}-${params.superficie}m2`)}.xlsx`, [
+    { name: 'Presupuesto', rows, cols: [24, 5, 60, 16, 8, 12, 14, 16] },
+    { name: 'Datos y fuentes', rows: info, cols: [34, 100] },
+  ]);
+}
+</script>
+</body>
+</html>

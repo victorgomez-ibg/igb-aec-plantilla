@@ -1,0 +1,14 @@
+# Secretos: nunca se suben al repo
+.env
+.env.*
+*.pem
+*.key
+
+# Node (solo si reconstruyes shared/vendor)
+node_modules/
+
+# SO / editores
+.DS_Store
+.vscode/
+.idea/
+*.log

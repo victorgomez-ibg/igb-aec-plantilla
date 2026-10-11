@@ -1,0 +1,53 @@
+{
+  "_meta": {
+    "version_vigente": "NOM-001-SEDE-2012",
+    "dof_publicacion": "2012-11-29",
+    "entrada_vigor": "2013-05-29",
+    "sustituye": "NOM-001-SEDE-2005",
+    "estatus": "Vigente",
+    "fuente": "platiica.economia.gob.mx - Catálogo Nacional de Normas",
+    "tier": 1,
+    "nota_revision": "Revisión sistemática 2023-07-24 recomendó 'Modificación'. Sin sucesor publicado.",
+    "advertencia": "NO existe NOM-001-SEDE-2018 vigente (solo PROY). NO existe NOM-001-SEDE-2022."
+  },
+  "articulos": {
+    "100": "Definiciones",
+    "200": "Identificación del conductor puesto a tierra",
+    "210": "Circuitos derivados / espaciamiento de contactos",
+    "220": "Cálculo de cargas (Parte C: alimentadores)",
+    "250": "Puesta a tierra",
+    "capitulo_3": "Métodos de alambrado",
+    "517": "Áreas de atención a la salud",
+    "690": "Sistemas fotovoltaicos"
+  },
+  "residencial": {
+    "calibre_minimo_alumbrado": "#12 AWG",
+    "calibre_contactos_20A": "#10 AWG",
+    "calibre_contactos_15A": "#12 AWG",
+    "circuitos_minimos_electrodomesticos": "2 o más circuitos de 20A a 120V",
+    "contactos_tipo": "Todos deben ser tipo puesta a tierra",
+    "altura_no_cuenta": "Contactos >1.70m sobre el piso no cuentan para espaciamiento requerido"
+  },
+  "dominios_observaciones": [
+    "Puesta a tierra",
+    "Protección contra sobrecorriente (termomagnéticos/fusibles)",
+    "Canalizaciones",
+    "Calibre de conductor y caída de tensión",
+    "Lugares peligrosos (áreas clasificadas)"
+  ],
+  "uvie": {
+    "obligatorio_para": ["Alta tensión", "Lugares de concentración pública", "Industrial", "Comercial", "Salud", "Hoteles"],
+    "acreditacion": "EMA (Entidad Mexicana de Acreditación) + aprobación SENER",
+    "independencia": "La UVIE no puede diseñar ni corregir la instalación",
+    "cfe_condicion": "CFE solo suministra energía tras certificación (Art. 28)",
+    "checklist_documentos": [
+      "Solicitud de servicio por escrito",
+      "Planos eléctricos (baja/media tensión)",
+      "Memoria de cálculo (alimentadores, caída de tensión, cortocircuito)",
+      "Diagrama unifilar + cuadros de carga",
+      "Resultados de pruebas de campo (continuidad, aislamiento, resistencia de tierra)",
+      "Certificados NOM/ANCE de materiales",
+      "Acceso seguro a tableros, registros, ductos y equipos el día de visita"
+    ]
+  }
+}

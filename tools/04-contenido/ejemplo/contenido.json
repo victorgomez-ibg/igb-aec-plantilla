@@ -1,0 +1,89 @@
+{
+  "titulo_proyecto": "Casa Cadereyta",
+  "linkedin": {
+    "texto": "Un terreno de 15×20 en Cadereyta y una condición clara: sol duro, vistas abiertas y poca agua. Así nació Casa Cadereyta, vivienda de 180 m² entregada en 2026.\n\nEl reto fue abrir la casa al paisaje sin convertirla en un invernadero. La respuesta llegó por partes. Volúmenes de concreto aparente que cierran hacia la calle y protegen las recámaras. Celosías y lambrín de madera que suavizan el conjunto y filtran la luz de la tarde. Ventanales de piso a techo con perfilería oscura, retranqueados bajo el volado del segundo nivel para ganar sombra.\n\nLa cochera se resolvió con una pérgola metálica y madera, integrada al frente en lugar de competir con él. El jardín trabaja con especies de bajo consumo de agua y grava, coherente con el entorno semidesértico.\n\nConcreto, madera, vidrio. Tres materiales, bien puestos.\n\n¿Qué material define el carácter de tus proyectos? Nos interesa leerlos.",
+    "hashtags": [
+      "#ArquitecturaMexicana",
+      "#ConcretoAparente",
+      "#Cadereyta",
+      "#DiseñoResidencial",
+      "#EstudioMarquésArquitectos"
+    ]
+  },
+  "carrusel": {
+    "laminas": [
+      {
+        "titulo": "180 m² frente al semidesierto",
+        "texto": "Casa Cadereyta: concreto aparente, madera y vidrio en un terreno de 15×20. Entregada en 2026."
+      },
+      {
+        "titulo": "El reto: abrir sin exponer",
+        "texto": "Queríamos vistas amplias y luz natural, sin que la casa se calentara. Había que dosificar cada apertura."
+      },
+      {
+        "titulo": "Decisiones de diseño",
+        "texto": "Muros de concreto hacia la calle. Ventanales retranqueados bajo el volado. Madera como filtro en fachada y cochera."
+      },
+      {
+        "titulo": "El detalle: madera y sombra",
+        "texto": "El lambrín horizontal marca el acceso y la cochera. La grava y las plantas de bajo riego cierran el conjunto."
+      },
+      {
+        "titulo": "¿Platicamos tu proyecto?",
+        "texto": "En Estudio Marqués Arquitectos diseñamos casa por casa, según terreno, clima y forma de habitar. Escríbenos por mensaje directo."
+      }
+    ],
+    "caption": "Casa Cadereyta, 180 m² en un terreno de 15×20. Estilo contemporáneo resuelto con tres materiales: concreto aparente, madera y vidrio.\n\nEl proyecto se organiza en dos niveles. Abajo, el área social se abre con ventanales de piso a techo hacia el jardín. Arriba, las recámaras quedan protegidas por volúmenes de concreto y paños de madera que filtran la luz de la tarde. El volado del segundo nivel da sombra al acceso.\n\nLa cochera se integró al frente con estructura metálica y madera. El jardín trabaja con grava y especies de bajo consumo de agua, en diálogo con el paisaje de la zona.\n\nEntregada en 2026. 🏜️",
+    "hashtags": [
+      "#ArquitecturaMexicana",
+      "#CasaContemporánea",
+      "#ConcretoAparente",
+      "#Cadereyta",
+      "#Querétaro",
+      "#DiseñoResidencial",
+      "#ArquitecturaYDiseño"
+    ]
+  },
+  "portafolio": {
+    "titulo": "Casa Cadereyta",
+    "resumen": "Casa habitación contemporánea de 180 m² en Cadereyta, resuelta en concreto aparente, madera y vidrio.",
+    "descripcion": [
+      "Casa Cadereyta ocupa un terreno de 15×20 metros en un entorno semidesértico de vistas abiertas. El proyecto se desarrolla en dos niveles y se organiza a partir de volúmenes de concreto aparente que ordenan la fachada y protegen las áreas privadas de la exposición directa hacia la calle. Entre ellos, paños de madera introducen calidez y funcionan como filtro de luz.",
+      "La planta baja abre el área social al jardín mediante ventanales de piso a techo con perfilería oscura, retranqueados bajo el volado del segundo nivel para ganar sombra. En el nivel superior, la terraza con barandal de cristal mantiene la relación visual con el paisaje. La cochera se resolvió con estructura metálica y celosía de madera, integrada al frente del conjunto. El jardín se trabajó con grava y vegetación de bajo consumo de agua, acorde con el clima del sitio. Proyecto entregado en 2026."
+    ],
+    "ficha": [
+      {
+        "etiqueta": "Ubicación",
+        "valor": "Cadereyta"
+      },
+      {
+        "etiqueta": "Año de entrega",
+        "valor": "2026"
+      },
+      {
+        "etiqueta": "Superficie",
+        "valor": "180 m²"
+      },
+      {
+        "etiqueta": "Terreno",
+        "valor": "15×20 m"
+      },
+      {
+        "etiqueta": "Programa",
+        "valor": "Casa habitación"
+      },
+      {
+        "etiqueta": "Estilo",
+        "valor": "Contemporáneo"
+      },
+      {
+        "etiqueta": "Materiales",
+        "valor": "Concreto aparente y madera"
+      },
+      {
+        "etiqueta": "Despacho",
+        "valor": "Estudio Marqués Arquitectos"
+      }
+    ]
+  }
+}

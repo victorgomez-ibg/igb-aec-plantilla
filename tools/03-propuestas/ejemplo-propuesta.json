@@ -1,0 +1,113 @@
+{
+  "titulo_proyecto": "Proyecto Arquitectónico y Presupuesto de Obra — Casa Habitación en Cadereyta de Montes",
+  "entendimiento": [
+    "La Familia Martínez busca construir una casa habitación contemporánea de dos niveles en Cadereyta de Montes, sobre un terreno de 15×20 metros. El programa considera tres recámaras, dos baños y medio, losa maciza y cochera para dos autos. Entendemos que se trata de una casa para habitar a largo plazo, por lo que la distribución, la orientación y el buen aprovechamiento del terreno son prioritarios.",
+    "También entendemos que la decisión de construir depende de tener claridad en el costo. Por eso el alcance incluye, además del proyecto arquitectónico completo, un presupuesto de obra con catálogo de conceptos y volumetrías. El paquete de planos se entrega con la integración necesaria para iniciar el trámite de licencia de construcción ante la autoridad municipal."
+  ],
+  "objetivos": [
+    "Definir un proyecto arquitectónico que responda al programa de la familia y a las condiciones del terreno.",
+    "Entregar un paquete de planos completo y coordinado, apto para presentarse en el trámite de licencia municipal.",
+    "Elaborar un presupuesto de obra con catálogo de conceptos y volúmenes para la toma de decisiones.",
+    "Controlar el costo desde el diseño, mediante decisiones constructivas claras y materiales definidos.",
+    "Dejar documentación suficiente para cotizar y contratar la construcción con criterios comparables."
+  ],
+  "servicios": [
+    {
+      "nombre": "Análisis de sitio y programa arquitectónico",
+      "descripcion": "Revisión del terreno, orientación, accesos y restricciones aplicables. Se define con la familia el programa de espacios y sus superficies."
+    },
+    {
+      "nombre": "Diseño conceptual y anteproyecto",
+      "descripcion": "Propuesta de distribución en dos niveles, volumetría y fachadas. Incluye ajustes hasta alcanzar la versión aprobada por el cliente."
+    },
+    {
+      "nombre": "Proyecto arquitectónico ejecutivo",
+      "descripcion": "Plantas, cortes, fachadas, detalles constructivos, albañilerías y acabados a nivel de obra."
+    },
+    {
+      "nombre": "Criterios de instalaciones",
+      "descripcion": "Trazo de instalación hidrosanitaria y eléctrica bajo criterios de la NOM-001-SEDE-2012, coordinados con el proyecto arquitectónico."
+    },
+    {
+      "nombre": "Criterio estructural preliminar",
+      "descripcion": "Definición del sistema de losa maciza, ejes y predimensionamiento, conforme al Manual de Obras Civiles de CFE y con las NTC de la CDMX como supletorias."
+    },
+    {
+      "nombre": "Imágenes de presentación",
+      "descripcion": "Renders exteriores e interiores de los espacios principales para visualizar el resultado antes de construir."
+    },
+    {
+      "nombre": "Presupuesto de obra",
+      "descripcion": "Catálogo de conceptos, cuantificación de volúmenes y precios unitarios integrados en un presupuesto base de construcción."
+    },
+    {
+      "nombre": "Integración de carpeta para licencia",
+      "descripcion": "Armado del paquete de planos y documentos en el formato requerido para ingresar el trámite de licencia de construcción."
+    }
+  ],
+  "fases": [
+    {
+      "nombre": "Fase 1. Levantamiento y anteproyecto",
+      "descripcion": "Análisis del terreno, definición del programa y propuesta de distribución y volumetría en dos niveles.",
+      "entregables": [
+        "Programa arquitectónico validado",
+        "Plantas de distribución de anteproyecto",
+        "Cortes y fachadas esquemáticos",
+        "Volumetría 3D de estudio"
+      ],
+      "peso_duracion": 25,
+      "peso_inversion": 20
+    },
+    {
+      "nombre": "Fase 2. Desarrollo del proyecto e imágenes",
+      "descripcion": "Definición de fachadas, acabados y detalle de espacios a partir del anteproyecto aprobado.",
+      "entregables": [
+        "Plantas, cortes y fachadas desarrollados",
+        "Renders exteriores",
+        "Renders de interiores principales",
+        "Tabla de acabados propuestos"
+      ],
+      "peso_duracion": 25,
+      "peso_inversion": 25
+    },
+    {
+      "nombre": "Fase 3. Proyecto ejecutivo e ingenierías",
+      "descripcion": "Elaboración de planos ejecutivos y coordinación de criterios estructural, hidrosanitario y eléctrico.",
+      "entregables": [
+        "Planos arquitectónicos ejecutivos y detalles",
+        "Plano de trazo y albañilerías",
+        "Criterio estructural y planta de losas",
+        "Planos de instalación hidrosanitaria y eléctrica"
+      ],
+      "peso_duracion": 30,
+      "peso_inversion": 35
+    },
+    {
+      "nombre": "Fase 4. Presupuesto e integración para licencia",
+      "descripcion": "Cuantificación de la obra, integración del presupuesto y armado de la carpeta para trámite municipal.",
+      "entregables": [
+        "Catálogo de conceptos y volumetrías",
+        "Presupuesto de obra integrado",
+        "Juego de planos para trámite de licencia",
+        "Memoria descriptiva del proyecto"
+      ],
+      "peso_duracion": 20,
+      "peso_inversion": 20
+    }
+  ],
+  "exclusiones": [
+    "Pago de derechos, licencias y cualquier trámite ante dependencias.",
+    "Estudio de mecánica de suelos.",
+    "Levantamiento topográfico del terreno.",
+    "Diseño estructural formal firmado por perito o DRO, así como el dictamen correspondiente.",
+    "Diseño de interiores, mobiliario, jardinería y paisajismo.",
+    "Dirección de obra, supervisión y construcción."
+  ],
+  "requisitos_cliente": [
+    "Documento que acredite la propiedad del terreno y sus medidas y colindancias oficiales.",
+    "Programa de necesidades confirmado por la familia y preferencias de acabados.",
+    "Información sobre disponibilidad de servicios municipales en el predio (agua, drenaje, energía eléctrica).",
+    "Un interlocutor designado por la familia para validar entregables en cada fase."
+  ],
+  "cierre": "Con gusto agendamos una reunión con la Familia Martínez para revisar esta propuesta a detalle, resolver dudas y ajustar el alcance si hiciera falta. Al confirmar, iniciamos con el levantamiento y la definición del programa."
+}

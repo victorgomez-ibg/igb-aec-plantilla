@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Factibilidad del predio · IGB AEC Suite</title>
+<link rel="icon" href="../../shared/img/logo_igb.png">
+<link rel="stylesheet" href="../../shared/css/aec-theme.css">
+<style>
+  .res-head { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+  .res-head h2 { margin: 0; }
+  fieldset { border: 0; padding: 0; margin: 0 0 6px; min-width: 0; }
+  legend { font-family: var(--mono); font-size: .74rem; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); margin: 10px 0 8px; padding: 0; }
+  .grid-3f { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .grid-2f { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .verdict { border-radius: var(--radius-lg); padding: 18px 22px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; border: 2px solid; }
+  .verdict .big { font-family: var(--mono); line-height: 1; font-size: clamp(1.6rem, 3.4vw, 2.4rem); font-weight: 700; letter-spacing: .02em; }
+  .verdict.ok { color: var(--ok); border-color: var(--ok); background: var(--ok-wash); }
+  .verdict.bad { color: var(--danger); border-color: var(--danger); background: var(--danger-wash); }
+  .verdict.none { color: var(--text-dim); border-color: var(--line); border-style: dashed; background: var(--surface-raised); }
+  .verdict p { margin: 0; color: var(--text); font-size: .9rem; }
+  .checklist { list-style: none; margin: 0; padding: 0; }
+  .checklist li { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: .92rem; }
+  .checklist li:last-child { border-bottom: 0; }
+  .checklist .ic { font-weight: 700; text-align: center; }
+  .checklist .ok .ic { color: var(--ok); }
+  .checklist .bad .ic { color: var(--danger); }
+  .checklist .skip { color: var(--text-dim); }
+  .checklist .val { font-family: var(--mono); font-size: .8rem; color: var(--text-dim); text-align: right; }
+  .plan-wrap { display: flex; justify-content: center; --plan-bg: #081533; --plan-ink: var(--gold); --plan-text: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .plan-wrap svg { width: 100%; height: auto; display: block; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .8rem; color: var(--text-dim); justify-content: center; margin-top: 8px; }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; border: 1px solid var(--line); }
+  .stat.bad .value { color: var(--danger); }
+  .stat.ok .value { color: var(--ok); }
+  table.summary { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  table.summary td { padding: 5px 0; border-bottom: 1px solid var(--line); }
+  table.summary td:last-child { text-align: right; font-family: var(--mono); }
+  .print-only { display: none; }
+  @media print {
+    .print-only { display: block; }
+    .plan-wrap { --plan-bg: #fff; --plan-ink: #8a6a1c; --plan-text: #111; }
+    .layout-sidebar { display: block; }
+    .stats { grid-template-columns: repeat(3, 1fr); }
+    .card, .stat, .verdict { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div id="header"></div>
+
+<main class="container page stack">
+  <section id="presets" aria-label="Ejemplos precargados"></section>
+  <div class="layout-sidebar">
+    <!-- ================= FORM ================= -->
+    <form id="form" class="card no-print" autocomplete="off">
+      <div class="card-title"><h2 style="margin:0">Datos del predio</h2><span class="spacer"></span>
+        <button type="button" class="btn btn-sm btn-ghost" id="btn-reset">Cargar ejemplo</button>
+      </div>
+
+      <fieldset>
+        <legend>Predio</legend>
+        <div class="field">
+          <label for="terreno">Superficie del terreno (m²)</label>
+          <input id="terreno" name="terreno" type="number" min="1" step="any" inputmode="decimal" required>
+        </div>
+        <div class="grid-2f">
+          <div class="field">
+            <label for="frente">Frente (m) <span class="dim">opcional</span></label>
+            <input id="frente" name="frente" type="number" min="0" step="any" inputmode="decimal">
+          </div>
+          <div class="field">
+            <label for="fondo">Fondo (m) <span class="dim">opcional</span></label>
+            <input id="fondo" name="fondo" type="number" min="0" step="any" inputmode="decimal">
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Uso de suelo (documento oficial)</legend>
+        <div class="grid-3f">
+          <div class="field">
+            <label for="cos">COS (%)</label>
+            <input id="cos" name="cos" type="number" min="1" max="100" step="any" inputmode="decimal" required>
+          </div>
+          <div class="field">
+            <label for="cus">CUS</label>
+            <input id="cus" name="cus" type="number" min="0.01" step="any" inputmode="decimal" required>
+          </div>
+          <div class="field">
+            <label for="altura">Altura (niv.)</label>
+            <input id="altura" name="altura" type="number" min="1" step="1" inputmode="numeric">
+          </div>
+        </div>
+        <div class="field">
+          <span id="modo-label" style="font-size:.85rem;font-weight:550;color:var(--heading)">Regla de estacionamiento</span>
+          <div class="segmented" role="radiogroup" aria-labelledby="modo-label">
+            <label><input type="radio" name="modo" value="vivienda" checked><span>Cajones por vivienda</span></label>
+            <label><input type="radio" name="modo" value="m2"><span>1 cajón cada X m²</span></label>
+          </div>
+        </div>
+        <div class="grid-2f" id="modo-vivienda">
+          <div class="field">
+            <label for="cajPorViv">Cajones por vivienda</label>
+            <input id="cajPorViv" name="cajPorViv" type="number" min="0" step="any" inputmode="decimal">
+          </div>
+          <div class="field">
+            <label for="viviendas">Núm. de viviendas</label>
+            <input id="viviendas" name="viviendas" type="number" min="1" step="1" inputmode="numeric">
+          </div>
+        </div>
+        <div class="field" id="modo-m2" hidden>
+          <label for="m2PorCajon">X = m² construidos por cajón</label>
+          <input id="m2PorCajon" name="m2PorCajon" type="number" min="1" step="any" inputmode="decimal">
+          <span class="hint">Comercio y oficinas. Base: construido propuesto o, si no hay, el máximo por CUS.</span>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Proyecto propuesto <span style="text-transform:none;letter-spacing:0">(opcional, para el veredicto)</span></legend>
+        <div class="grid-2f">
+          <div class="field">
+            <label for="pDesplante">Desplante (m²)</label>
+            <input id="pDesplante" name="pDesplante" type="number" min="0" step="any" inputmode="decimal">
+          </div>
+          <div class="field">
+            <label for="pConstruido">Construido total (m²)</label>
+            <input id="pConstruido" name="pConstruido" type="number" min="0" step="any" inputmode="decimal">
+          </div>
+          <div class="field">
+            <label for="pNiveles">Niveles</label>
+            <input id="pNiveles" name="pNiveles" type="number" min="0" step="1" inputmode="numeric">
+          </div>
+          <div class="field">
+            <label for="pCajones">Cajones proyectados</label>
+            <input id="pCajones" name="pCajones" type="number" min="0" step="1" inputmode="numeric">
+          </div>
+        </div>
+      </fieldset>
+
+      <button class="btn btn-primary btn-block" id="btn-print" type="button">Descargar ficha (PDF)</button>
+    </form>
+
+    <!-- ================= RESULT ================= -->
+    <section id="result" class="stack reveal" aria-live="polite"></section>
+  </div>
+</main>
+
+<script type="module">
+import { appHeader, banner, fmt, escapeHtml, toast } from '../../shared/js/ui-components.js';
+import { presetPicker } from '../../shared/js/presets.js';
+
+// Pure client-side normative calculator: no API calls, no keys, works offline.
+const DISCLAIMER = 'Cálculo normativo de referencia. Los coeficientes (COS/CUS), altura y reglas de estacionamiento provienen del documento oficial de uso de suelo del predio. El dimensionamiento definitivo y su validación corresponden al responsable del proyecto.';
+const STORE_KEY = 'igb-aec.factibilidad';
+const DEFAULTS = {
+  terreno: 300, frente: 15, fondo: 20, cos: 60, cus: 1.8, altura: 3,
+  modo: 'vivienda', cajPorViv: 1, viviendas: 4, m2PorCajon: 40,
+  pDesplante: 170, pConstruido: 480, pNiveles: 3, pCajones: 6,
+};
+const FIELDS = Object.keys(DEFAULTS).filter((k) => k !== 'modo');
+// Presets: complete, coherent cases. All compute instantly in the browser (no API).
+const PRESETS = [
+  { id: 'condominio-4', cat: 'Vivienda', title: 'Condominio de 4 viviendas', meta: 'Terreno 300 m² (15×20), COS 60 %, CUS 1.8, 3 niveles. Da CUMPLE.', tags: ['1 cajón/vivienda'], data: DEFAULTS },
+  { id: 'casa-cadereyta', cat: 'Vivienda', title: 'Casa 180 m² · Cadereyta', meta: 'Unifamiliar en 15×20, 2 niveles, 2 cajones. Caso del taller.', tags: ['Semidesierto'],
+    data: { terreno: 300, frente: 15, fondo: 20, cos: 60, cus: 1.2, altura: 2, modo: 'vivienda', cajPorViv: 1, viviendas: 1, m2PorCajon: 40, pDesplante: 110, pConstruido: 180, pNiveles: 2, pCajones: 2 } },
+  { id: 'horizontal-6', cat: 'Vivienda', title: 'Condominio horizontal · 6 casas', meta: 'Terreno 600 m² (20×30), COS 60 %, CUS 1.5, 2 niveles.', tags: ['Desarrollo'],
+    data: { terreno: 600, frente: 20, fondo: 30, cos: 60, cus: 1.5, altura: 2, modo: 'vivienda', cajPorViv: 1, viviendas: 6, m2PorCajon: 40, pDesplante: 320, pConstruido: 640, pNiveles: 2, pCajones: 8 } },
+  { id: 'local-comercial', cat: 'Comercial', title: 'Local comercial y oficinas', meta: 'Terreno 250 m² (10×25), COS 80 %, CUS 2.4. 1 cajón cada 40 m².', tags: ['Regla por m²'],
+    data: { terreno: 250, frente: 10, fondo: 25, cos: 80, cus: 2.4, altura: 3, modo: 'm2', cajPorViv: 1, viviendas: 1, m2PorCajon: 40, pDesplante: 190, pConstruido: 380, pNiveles: 2, pCajones: 10 } },
+  { id: 'no-cumple', cat: 'Revisión', title: 'Proyecto excedido: NO CUMPLE', meta: 'Terreno 200 m² (10×20): excede COS, CUS y cajones. Para mostrar el rechazo.', tags: ['Caso didáctico'],
+    data: { terreno: 200, frente: 10, fondo: 20, cos: 60, cus: 1.8, altura: 3, modo: 'vivienda', cajPorViv: 1, viviendas: 3, m2PorCajon: 40, pDesplante: 150, pConstruido: 400, pNiveles: 3, pCajones: 2 } },
+];
+
+const $ = (sel) => document.querySelector(sel);
+appHeader($('#header'), { num: '05', title: 'Factibilidad del predio (COS/CUS)', settings: false });
+
+const m2 = (n) => `${fmt.num(Math.round(n * 100) / 100)} m²`;
+const num = (v) => { const s = String(v ?? '').trim(); if (s === '') return null; const n = Number(s); return Number.isFinite(n) ? n : null; };
+const pos = (v) => (v != null && v > 0 ? v : null);
+
+// ---------- state: form <-> localStorage ----------
+function writeForm(v) {
+  for (const k of FIELDS) $(`#${k}`).value = v[k] ?? '';
+  document.querySelector(`input[name=modo][value="${v.modo === 'm2' ? 'm2' : 'vivienda'}"]`).checked = true;
+}
+function readForm() {
+  const v = { modo: document.querySelector('input[name=modo]:checked').value };
+  for (const k of FIELDS) v[k] = $(`#${k}`).value;
+  return v;
+}
+function load() {
+  try { const s = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); if (s && typeof s === 'object') return { ...DEFAULTS, ...s }; } catch { /* storage blocked */ }
+  return { ...DEFAULTS };
+}
+function save(v) { try { localStorage.setItem(STORE_KEY, JSON.stringify(v)); } catch { /* storage blocked */ } }
+
+// ---------- calculation ----------
+function calcular(raw) {
+  const terreno = pos(num(raw.terreno));
+  const cos = pos(num(raw.cos));
+  const cus = pos(num(raw.cus));
+  if (!terreno || !cos || !cus || cos > 100) return null;
+  const cosFrac = cos / 100;
+  const altura = pos(num(raw.altura));
+  const r = {
+    terreno, cos, cus, cosFrac, altura,
+    frente: pos(num(raw.frente)), fondo: pos(num(raw.fondo)),
+    desplanteMax: terreno * cosFrac,
+    construibleMax: terreno * cus,
+    libreMin: terreno * (1 - cosFrac),
+  };
+  // floor with a small epsilon so 1.8 / 0.6 = 2.9999… still yields 3
+  const nivInd = Math.floor(cus / cosFrac + 1e-9);
+  r.nivelesMaxInd = altura ? Math.min(nivInd, Math.floor(altura)) : nivInd;
+  r.nivelesLimitadoPorAltura = !!altura && Math.floor(altura) < nivInd;
+
+  const p = {
+    desplante: num(raw.pDesplante), construido: num(raw.pConstruido),
+    niveles: num(raw.pNiveles), cajones: num(raw.pCajones),
+  };
+  r.p = p;
+
+  r.modo = raw.modo === 'm2' ? 'm2' : 'vivienda';
+  if (r.modo === 'vivienda') {
+    const cpv = num(raw.cajPorViv), nv = num(raw.viviendas);
+    r.cajonesReq = cpv != null && nv != null && cpv >= 0 && nv > 0 ? Math.ceil(cpv * nv - 1e-9) : null;
+    r.cajonesBase = cpv != null && nv != null ? `${fmt.num(cpv)} × ${fmt.num(nv)} viviendas` : '';
+  } else {
+    const x = pos(num(raw.m2PorCajon));
+    const base = pos(p.construido) ?? r.construibleMax;
+    r.cajonesReq = x ? Math.ceil(base / x - 1e-9) : null;
+    r.cajonesBase = x ? `${m2(base)} ÷ ${fmt.num(x)} m²${pos(p.construido) ? ' (construido propuesto)' : ' (máx. por CUS)'}` : '';
+  }
+
+  r.ocupacionProyecto = p.desplante != null ? (p.desplante / terreno) * 100 : null;
+  r.libreProyecto = p.desplante != null ? terreno - p.desplante : null;
+
+  const checks = [
+    { label: 'Desplante ≤ máximo por COS', val: p.desplante, limit: r.desplanteMax, ok: (v) => v <= r.desplanteMax + 1e-9, show: (v) => `${m2(v)} / ${m2(r.desplanteMax)}` },
+    { label: 'Construido ≤ máximo por CUS', val: p.construido, limit: r.construibleMax, ok: (v) => v <= r.construibleMax + 1e-9, show: (v) => `${m2(v)} / ${m2(r.construibleMax)}` },
+    { label: 'Niveles ≤ altura máxima', val: altura ? p.niveles : null, ok: (v) => v <= altura, show: (v) => `${fmt.num(v)} / ${fmt.num(altura)} niv.`, skip: altura ? null : 'sin altura máxima capturada' },
+    { label: 'Área libre ≥ mínima', val: r.libreProyecto, ok: (v) => v >= r.libreMin - 1e-9, show: (v) => `${m2(v)} / ${m2(r.libreMin)}`, skip: p.desplante == null ? 'requiere el desplante' : null },
+    { label: 'Cajones ≥ requeridos', val: r.cajonesReq != null ? p.cajones : null, ok: (v) => v >= r.cajonesReq, show: (v) => `${fmt.num(v)} / ${fmt.num(r.cajonesReq)}`, skip: r.cajonesReq == null ? 'regla de estacionamiento incompleta' : null },
+  ].map((c) => (c.val == null ? { ...c, estado: 'skip' } : { ...c, estado: c.ok(c.val) ? 'ok' : 'bad' }));
+  r.checks = checks;
+  const evaluados = checks.filter((c) => c.estado !== 'skip');
+  r.veredicto = evaluados.length ? (evaluados.every((c) => c.estado === 'ok') ? 'CUMPLE' : 'NO CUMPLE') : null;
+  return r;
+}
+
+// ---------- plan SVG (technical drawing; presentation only) ----------
+function planSvg(r) {
+  const hasDims = !!(r.frente && r.fondo);
+  const W = hasDims ? r.frente : Math.sqrt(r.terreno);
+  const D = hasDims ? r.fondo : Math.sqrt(r.terreno);
+  const pDes = r.p.desplante != null && r.p.desplante >= 0;
+  const frac = pDes ? r.p.desplante / r.terreno : r.cosFrac;
+  const excede = pDes && r.p.desplante > r.desplanteMax + 1e-9;
+
+  const VW = 620, VH = 520, M = { l: 74, r: 104, t: 54, b: 96 };
+  const s = Math.min((VW - M.l - M.r) / W, (VH - M.t - M.b) / D);
+  const w = W * s, d = D * s, x0 = M.l + (VW - M.l - M.r - w) / 2, y0 = M.t;
+  const dh = Math.min(1, Math.max(0, frac)) * d; // footprint drawn from the street edge
+  const yDes = y0 + d - dh;
+  const cosY = y0 + d - r.cosFrac * d;
+  const q = (n) => (Math.round(n * 100) / 100).toString();
+  const lbl = (n) => `${hasDims ? '' : '≈ '}${q(n)} m`;
+  const desInk = excede ? 'var(--bad)' : 'var(--plan-ink)';
+
+  // Dimension line with extension lines and 45° architectural ticks.
+  const tick = (x, y) => `<line x1="${x - 5}" y1="${y + 5}" x2="${x + 5}" y2="${y - 5}" class="fp-tk"/>`;
+  const dimH = (xa, xb, y, yRef, text) => `
+    <line x1="${xa}" y1="${yRef}" x2="${xa}" y2="${y + 6}" class="fp-ext"/><line x1="${xb}" y1="${yRef}" x2="${xb}" y2="${y + 6}" class="fp-ext"/>
+    <line x1="${xa - 8}" y1="${y}" x2="${xb + 8}" y2="${y}" class="fp-dl"/>${tick(xa, y)}${tick(xb, y)}
+    <text x="${(xa + xb) / 2}" y="${y - 7}" text-anchor="middle" class="fp-dt">${text}</text>`;
+  const dimV = (ya, yb, x, xRef, text, side = -1) => `
+    <line x1="${xRef}" y1="${ya}" x2="${x + side * -6}" y2="${ya}" class="fp-ext"/><line x1="${xRef}" y1="${yb}" x2="${x + side * -6}" y2="${yb}" class="fp-ext"/>
+    <line x1="${x}" y1="${ya - 8}" x2="${x}" y2="${yb + 8}" class="fp-dl"/>${tick(x, ya)}${tick(x, yb)}
+    <text transform="translate(${x + side * 9} ${(ya + yb) / 2}) rotate(-90)" text-anchor="middle" class="fp-dt">${text}</text>`;
+
+  // Scale bar: a round length close to a quarter of the frente.
+  const nice = [500, 200, 100, 50, 25, 20, 10, 5, 2, 1].find((n) => n * s <= 130) ?? 1; // bottom-right corner, ≤130 px
+  const sbw = nice * s, sbx = VW - 22 - sbw, sby = VH - 30;
+  const sbSeg = [0, 1, 2, 3].map((i) => `<rect x="${sbx + (i * sbw) / 4}" y="${sby}" width="${sbw / 4}" height="5" class="${i % 2 ? 'fp-sb2' : 'sb1'}"/>`).join('');
+  const nx = VW - M.r / 2, ny = M.t + 22;
+
+  return `<svg viewBox="0 0 ${VW} ${VH}" role="img" aria-label="Esquema del predio: desplante ${fmt.pct(frac * 100)} del terreno">
+    <style>
+      .fp-ext{stroke:var(--plan-ink);stroke-width:.75;opacity:.55}.fp-dl{stroke:var(--plan-ink);stroke-width:.9}.fp-tk{stroke:var(--plan-ink);stroke-width:1.5}
+      .fp-dt{font-family:var(--mono);font-size:16px;fill:var(--plan-text)}
+      .fp-lab{font-family:var(--sans);font-size:18px;font-weight:700}
+      .fp-sm{font-family:var(--mono);font-size:11px;letter-spacing:.18em;fill:var(--muted)}
+      .fp-sb1{fill:var(--plan-ink)}.fp-sb2{fill:none;stroke:var(--plan-ink);stroke-width:.9}
+    </style>
+    <defs>
+      <pattern id="fgrid" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M12 0H0V12" fill="none" stroke="var(--plan-ink)" stroke-width=".5" opacity=".12"/></pattern>
+      <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="9" stroke="${desInk}" stroke-width="1" opacity=".75"/></pattern>
+    </defs>
+    <rect width="${VW}" height="${VH}" fill="var(--plan-bg)"/>
+    <rect width="${VW}" height="${VH}" fill="url(#fgrid)"/>
+
+    <rect x="${x0}" y="${y0}" width="${w}" height="${d - dh}" fill="var(--ok)" fill-opacity=".10"/>
+    <rect x="${x0}" y="${yDes}" width="${w}" height="${dh}" fill="${desInk}" fill-opacity=".08"/>
+    <rect x="${x0}" y="${yDes}" width="${w}" height="${dh}" fill="url(#hatch)" stroke="${desInk}" stroke-width="1.6"/>
+    ${pDes ? `<line x1="${x0 - 10}" x2="${x0 + w + 10}" y1="${cosY}" y2="${cosY}" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="7 5"/>
+      <text x="${x0 + w - 4}" y="${cosY - 7}" text-anchor="end" font-family="var(--mono)" font-size="12" fill="var(--warn)">COS máx. ${fmt.num(r.cos)}%</text>` : ''}
+    <rect x="${x0}" y="${y0}" width="${w}" height="${d}" fill="none" stroke="var(--plan-ink)" stroke-width="1.6" stroke-dasharray="16 4 2 4"/>
+    ${d - dh > 34 ? `<text x="${x0 + w / 2}" y="${y0 + (d - dh) / 2 + 5}" text-anchor="middle" class="fp-lab" fill="var(--ok)">Área libre · ${m2(r.terreno * (1 - Math.min(1, frac)))}</text>` : ''}
+    ${dh > 34 ? `<text x="${x0 + w / 2}" y="${yDes + dh / 2 + 5}" text-anchor="middle" class="fp-lab" fill="${excede ? 'var(--bad)' : 'var(--plan-text)'}" paint-order="stroke" stroke="var(--plan-bg)" stroke-width="5">Desplante · ${m2(r.terreno * frac)} (${fmt.pct(frac * 100)})</text>` : ''}
+
+    ${dimH(x0, x0 + w, y0 + d + 34, y0 + d + 4, `Frente ${lbl(W)}`)}
+    ${dimV(y0, y0 + d, x0 - 34, x0 - 4, `Fondo ${lbl(D)}`)}
+    ${hasDims && dh > 20 && dh < d - 1 ? dimV(yDes, y0 + d, x0 + w + 26, x0 + w + 4, `${q(dh / s)} m`, 1) : ''}
+
+    <line x1="${x0}" x2="${x0 + w}" y1="${y0 + d + 60}" y2="${y0 + d + 60}" stroke="var(--muted)" stroke-width=".75" opacity=".6"/>
+    <text x="${x0 + w / 2}" y="${y0 + d + 78}" text-anchor="middle" class="fp-sm">CALLE</text>
+    <text x="${x0 + w / 2}" y="${y0 - 18}" text-anchor="middle" font-family="var(--mono)" font-size="13" fill="var(--muted)">TERRENO ${m2(r.terreno)}${hasDims ? '' : ' · SIN MEDIDAS: CUADRADO'}</text>
+
+    <g transform="translate(${nx} ${ny})" aria-label="Norte">
+      <circle r="17" fill="none" stroke="var(--plan-ink)" stroke-width=".9"/>
+      <path d="M0 -14 L6 9 L0 4 L-6 9 Z" fill="var(--plan-ink)"/>
+      <text y="-22" text-anchor="middle" font-family="var(--mono)" font-size="12" font-weight="700" fill="var(--plan-ink)">N</text>
+    </g>
+    <g aria-label="Escala gráfica">${sbSeg}
+      <text x="${sbx}" y="${sby - 7}" font-family="var(--mono)" font-size="11" fill="var(--plan-text)">0</text>
+      <text x="${sbx + sbw}" y="${sby - 7}" text-anchor="end" font-family="var(--mono)" font-size="11" fill="var(--plan-text)">${nice} m</text>
+    </g>
+  </svg>`;
+}
+
+// ---------- render ----------
+function render() {
+  const raw = readForm();
+  save(raw);
+  $('#modo-vivienda').hidden = raw.modo !== 'vivienda';
+  $('#modo-m2').hidden = raw.modo !== 'm2';
+  const r = calcular(raw);
+  if (!r) {
+    $('#result').innerHTML = `<div class="empty"><div class="big">COS · CUS</div><p style="margin:0">Captura la superficie del terreno, el COS (1–100 %) y el CUS del documento de uso de suelo.</p></div>`;
+    return;
+  }
+  const dimsWarn = r.frente && r.fondo && Math.abs(r.frente * r.fondo - r.terreno) / r.terreno > 0.05
+    ? banner('warn', `Frente × fondo = ${m2(r.frente * r.fondo)}, distinto de la superficie capturada (${m2(r.terreno)}). El dibujo usa las medidas; los cálculos, la superficie.`) : '';
+  const chk = (key) => { const c = r.checks.find((x) => x.label.startsWith(key)); return c?.estado === 'bad' ? 'bad' : c?.estado === 'ok' ? 'ok' : ''; };
+
+  const verdict = r.veredicto
+    ? `<div class="verdict ${r.veredicto === 'CUMPLE' ? 'ok' : 'bad'}"><span class="big">${r.veredicto === 'CUMPLE' ? '✓' : '✕'} ${r.veredicto}</span>
+        <p>${r.veredicto === 'CUMPLE' ? 'Todos los rubros capturados están dentro de la norma de uso de suelo.' : `${r.checks.filter((c) => c.estado === 'bad').length} rubro(s) fuera de norma: ${r.checks.filter((c) => c.estado === 'bad').map((c) => escapeHtml(c.label)).join(' · ')}.`}</p></div>`
+    : `<div class="verdict none"><span class="big" style="font-size:1.2rem">Sin veredicto</span><p>Captura el proyecto propuesto para compararlo contra la norma.</p></div>`;
+
+  $('#result').innerHTML = `
+    <div class="res-head">
+      <div>
+        <div class="eyebrow">Ficha de factibilidad · ${fmt.date()}</div>
+        <h2>Terreno ${m2(r.terreno)} · COS ${fmt.num(r.cos)}% · CUS ${fmt.num(r.cus)}${r.altura ? ` · ${fmt.num(r.altura)} niveles` : ''}</h2>
+      </div>
+    </div>
+    ${dimsWarn}
+    ${verdict}
+    <div class="stats">
+      <div class="stat ${chk('Construido')}"><div class="label">Área máx. construible (CUS)</div><div class="value">${m2(r.construibleMax)}</div><div class="sub">${m2(r.terreno)} × ${fmt.num(r.cus)}</div></div>
+      <div class="stat ${chk('Desplante')}"><div class="label">Área máx. de desplante (COS)</div><div class="value">${m2(r.desplanteMax)}</div><div class="sub">${m2(r.terreno)} × ${fmt.num(r.cos)}%</div></div>
+      <div class="stat ${chk('Niveles')}"><div class="label">Niveles máx. indicativos</div><div class="value">${fmt.num(r.nivelesMaxInd)}</div><div class="sub">${r.nivelesLimitadoPorAltura ? 'limitado por la altura máxima' : `⌊CUS ÷ COS⌋${r.altura ? ', dentro de la altura' : ''}`}</div></div>
+      <div class="stat ${chk('Área libre')}"><div class="label">Área libre mínima</div><div class="value">${m2(r.libreMin)}</div><div class="sub">${fmt.num(100 - r.cos)}% del terreno</div></div>
+      <div class="stat ${chk('Cajones')}"><div class="label">Cajones requeridos</div><div class="value">${r.cajonesReq != null ? fmt.num(r.cajonesReq) : '—'}</div><div class="sub">${escapeHtml(r.cajonesBase || 'captura la regla')}</div></div>
+      <div class="stat ${chk('Desplante')}"><div class="label">Ocupación del proyecto</div><div class="value">${r.ocupacionProyecto != null ? fmt.pct(r.ocupacionProyecto) : '—'}</div><div class="sub">${r.ocupacionProyecto != null ? `vs. ${fmt.num(r.cos)}% permitido` : 'requiere el desplante'}</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><h3 style="margin:0">Revisión por rubro</h3></div>
+        <ul class="checklist">
+          ${r.checks.map((c) => `<li class="${c.estado}"><span class="ic">${c.estado === 'ok' ? '✓' : c.estado === 'bad' ? '✕' : '–'}</span>
+            <span>${escapeHtml(c.label)}${c.estado === 'skip' ? ` <span class="dim">· ${escapeHtml(c.skip || 'no capturado')}</span>` : ''}</span>
+            <span class="val">${c.estado === 'skip' ? '' : c.show(c.val)}</span></li>`).join('')}
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title"><h3 style="margin:0">Esquema del predio</h3></div>
+        <div class="plan-wrap">${planSvg(r)}</div>
+        <div class="legend"><span><i style="background:repeating-linear-gradient(45deg, var(--gold) 0 1px, transparent 1px 5px);border-color:var(--gold)"></i>Desplante${r.p.desplante != null ? ' propuesto' : ' máx. (COS)'}</span><span><i style="background:rgba(79,208,138,.2);border-color:var(--ok)"></i>Área libre</span>${r.p.desplante != null ? '<span><i style="background:none;border:0;border-top:2px dashed var(--warn);height:0;width:14px"></i>Límite COS</span>' : ''}</div>
+        <p class="hint" style="text-align:center;margin:6px 0 0">Representación esquemática de áreas; no indica la posición real del desplante.</p>
+      </div>
+    </div>
+    <div class="card print-only">
+      <div class="card-title"><h3 style="margin:0">Datos capturados</h3></div>
+      <table class="summary"><tbody>
+        <tr><td>Terreno</td><td>${m2(r.terreno)}${r.frente && r.fondo ? ` (${fmt.num(r.frente)} × ${fmt.num(r.fondo)} m)` : ''}</td></tr>
+        <tr><td>COS / CUS / altura</td><td>${fmt.num(r.cos)}% / ${fmt.num(r.cus)} / ${r.altura ? fmt.num(r.altura) + ' niv.' : '—'}</td></tr>
+        <tr><td>Estacionamiento</td><td>${escapeHtml(r.cajonesBase || '—')}</td></tr>
+        <tr><td>Proyecto: desplante / construido</td><td>${r.p.desplante != null ? m2(r.p.desplante) : '—'} / ${r.p.construido != null ? m2(r.p.construido) : '—'}</td></tr>
+        <tr><td>Proyecto: niveles / cajones</td><td>${r.p.niveles ?? '—'} / ${r.p.cajones ?? '—'}</td></tr>
+      </tbody></table>
+    </div>
+    <p class="disclaimer">${escapeHtml(DISCLAIMER)}</p>`;
+}
+
+writeForm(load());
+$('#form').addEventListener('input', render);
+$('#form').addEventListener('change', render);
+const picker = presetPicker($('#presets'), { presets: PRESETS, respaldoLabel: 'Sin API', onSelect: (p) => { writeForm({ ...DEFAULTS, ...p.data }); render(); toast(`Ejemplo cargado: ${p.title}`); } });
+$('#btn-reset').addEventListener('click', () => picker.select(PRESETS[0].id));
+$('#btn-print').addEventListener('click', () => window.print());
+render();
+</script>
+</body>
+</html>

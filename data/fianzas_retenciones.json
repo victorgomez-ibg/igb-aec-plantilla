@@ -1,0 +1,23 @@
+{
+  "_meta": {"tier": 1, "fuente": "LOPSRM, Ley Federal de Derechos, HELIOS/CMIC"},
+  "fianzas": {
+    "cumplimiento": {"porcentaje": 10, "base": "monto del contrato"},
+    "vicios_ocultos": {"porcentaje": 10, "base": "monto ejercido", "vigencia_minima": "12 meses desde recepción física", "art": "LOPSRM Art. 66"},
+    "anticipo": {"porcentaje": 30, "nota": "En función del % de anticipo otorgado; algunas fuentes citan hasta 50%"}
+  },
+  "plazo_presentacion_cumplimiento": "15 días naturales desde notificación del fallo",
+  "retenciones_por_estimacion": {
+    "cinco_al_millar": {"porcentaje": 0.5, "concepto": "Vigilancia/inspección/control SFP", "art": "Art. 191 Ley Federal de Derechos"},
+    "dos_al_millar": {"porcentaje": 0.2, "concepto": "Capacitación y adiestramiento ICIC"}
+  },
+  "cfdi": "Ambas retenciones deben reflejarse vía complemento correspondiente (requisito SAT)",
+  "iva": 16,
+  "modalidades_contrato": ["Precio alzado", "Precios unitarios"],
+  "marco_legal": {"publica": "LOPSRM", "privada": "Código Civil del Estado de Querétaro"},
+  "clausulas_estandar": ["Partes", "Objeto", "Precio y forma de pago", "Anticipo", "Plazo", "Garantías/fianzas", "Penas convencionales", "Supervisión", "Recepción", "Rescisión"],
+  "reformas_2025": {
+    "fechas": ["2025-04-16", "2025-11-14"],
+    "cambio_principal": "Nueva Plataforma Digital de Contrataciones Públicas (Compras.mx) reemplaza CompraNet",
+    "bitacora": "BESOP/BEOP sigue obligatorio; no derogado"
+  }
+}

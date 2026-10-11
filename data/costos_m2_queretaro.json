@@ -1,0 +1,117 @@
+{
+  "_meta": {
+    "tier": 2,
+    "refresh": "quarterly",
+    "advertencia": "Valor de mercado ≠ costo de construcción"
+  },
+  "valor_mercado_m2": {
+    "promedio_2025": 24724,
+    "fuente": "INBAPREVI Banorte",
+    "zonas_consolidadas": {
+      "min": 29000,
+      "max": 35000
+    }
+  },
+  "costo_construccion_m2": {
+    "residencial_promedio": {
+      "valor": 12800,
+      "min": 9500,
+      "max": 18500,
+      "fuente": "DatAlpine"
+    },
+    "custom_builder": {
+      "min": 15000,
+      "max": 20000,
+      "fuente": "Didomani"
+    },
+    "factor_interciudades_vs_cdmx": 0.975
+  },
+  "por_zona_2025": {
+    "juriquilla": {
+      "min": 25000,
+      "max": 35000,
+      "grupo": "metro",
+      "label": "Juriquilla"
+    },
+    "zibata": {
+      "min": 20000,
+      "max": 28000,
+      "grupo": "metro",
+      "label": "Zibatá"
+    },
+    "el_refugio": {
+      "min": 18000,
+      "max": 28000,
+      "grupo": "metro",
+      "label": "El Refugio",
+      "direccional": true,
+      "fuente": "Listados El Refugio sep-2026 (Pincali, 3 deptos: ~$18.5k–34k/m²) y rango horizontal Qro $15k–25k/m² (Plaza de Armas)"
+    },
+    "milenio_iii": {
+      "min": 22000,
+      "max": 30000,
+      "grupo": "metro",
+      "label": "Milenio III"
+    },
+    "centro_historico": {
+      "min": 15000,
+      "max": 25000,
+      "grupo": "metro",
+      "label": "Centro Histórico",
+      "direccional": true,
+      "fuente": "Sin dato propio: rango estatal de vivienda horizontal $15k–25k/m² (Plaza de Armas)"
+    },
+    "cadereyta": {
+      "min": 9000,
+      "max": 13000,
+      "grupo": "semidesierto",
+      "label": "Cadereyta de Montes",
+      "direccional": true,
+      "fuente": "Proxy regional: mediana Colón $11,052/m² construido (propiedades.com, consulta sep-2026); sin dato propio del municipio"
+    },
+    "ezequiel_montes": {
+      "min": 9000,
+      "max": 13000,
+      "grupo": "semidesierto",
+      "label": "Ezequiel Montes",
+      "direccional": true,
+      "fuente": "Proxy regional: mediana Colón $11,052/m² construido (propiedades.com, consulta sep-2026); sin dato propio del municipio"
+    },
+    "tequisquiapan": {
+      "min": 9000,
+      "max": 16000,
+      "grupo": "semidesierto",
+      "label": "Tequisquiapan",
+      "direccional": true,
+      "fuente": "Listados Tequisquiapan sep-2026 (Mercado Libre: ~$8.4k y ~$18.3k/m², muy dispersos) y mediana Colón $11,052/m²"
+    },
+    "bernal": {
+      "min": 9000,
+      "max": 13000,
+      "grupo": "semidesierto",
+      "label": "Bernal (San Sebastián)",
+      "direccional": true,
+      "fuente": "Proxy regional: mediana Colón $11,052/m² construido (propiedades.com, consulta sep-2026); sin dato propio del municipio"
+    },
+    "colon": {
+      "min": 9000,
+      "max": 13000,
+      "grupo": "semidesierto",
+      "label": "Colón",
+      "direccional": true,
+      "fuente": "Mediana $11,052/m² construido, casas en venta Colón (propiedades.com, consulta sep-2026); rango ±~20%"
+    },
+    "penamiller": {
+      "min": 9000,
+      "max": 13000,
+      "grupo": "semidesierto",
+      "label": "Peñamiller",
+      "direccional": true,
+      "fuente": "Proxy regional: mediana Colón $11,052/m² construido (propiedades.com, consulta sep-2026); sin dato propio del municipio"
+    }
+  },
+  "nave_industrial_estructura_mano_obra_m2": {
+    "min": 2000,
+    "max": 3200
+  }
+}

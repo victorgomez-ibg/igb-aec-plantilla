@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generador de propuestas · IGB AEC Suite</title>
+<link rel="icon" href="../../shared/img/logo_igb.png">
+<link rel="stylesheet" href="../../shared/css/aec-theme.css">
+<style>
+  .layout-sidebar > * { min-width: 0; }
+  .hook { display: flex; gap: 14px; align-items: center; background: linear-gradient(90deg, rgba(230,193,105,.14), rgba(230,193,105,.03)); color: var(--paper); border: 1px solid var(--line-strong); border-left: 3px solid var(--gold); border-radius: var(--radius-lg); padding: 14px 18px; }
+  .hook strong { font-family: var(--display); font-weight: 600; color: var(--gold-bright); }
+  .hook strong { font-size: 1.05rem; }
+  .hook span { opacity: .9; font-size: .92rem; }
+  .toggle { display: flex; gap: 10px; align-items: center; font-size: .85rem; padding: 10px 12px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--surface-sunken); }
+  .toggle input { width: 18px; height: 18px; accent-color: var(--accent); }
+  .doc { background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+  .doc-cover { background: linear-gradient(135deg, var(--navy-3) 0%, var(--ink) 100%); border-bottom: 1px solid var(--gold-deep); color: var(--paper); padding: 36px 32px; }
+  .doc-cover .eyebrow { color: var(--gold); }
+  .doc-cover h2 { color: #fff; font-family: var(--display); font-weight: 600; font-size: clamp(1.3rem, 2.6vw, 1.9rem); margin: 6px 0 14px; line-height: 1.2; }
+  .doc-cover .meta { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: .88rem; opacity: .92; }
+  .doc-body { padding: 8px 32px 28px; }
+  .doc-body section { padding-top: 18px; }
+  .doc-body h3 { color: var(--accent); text-transform: uppercase; letter-spacing: .04em; font-size: .85rem; border-bottom: 1px solid var(--line); padding-bottom: 6px; margin: 0 0 10px; }
+  .doc-body ul { margin: 0; padding-left: 20px; }
+  .doc-body li { margin: 3px 0; }
+  .fase { border-left: 3px solid var(--accent); padding: 4px 0 4px 12px; margin: 10px 0; }
+  .fase .t { font-weight: 650; color: var(--heading); }
+  .gantt { display: grid; gap: 6px; }
+  .gantt-row { display: grid; grid-template-columns: minmax(120px, 34%) 1fr; gap: 10px; align-items: center; font-size: .82rem; }
+  .gantt-track { position: relative; height: 22px; background: var(--surface-sunken); border-radius: 4px; }
+  .gantt-bar { position: absolute; top: 0; bottom: 0; background: linear-gradient(90deg, var(--gold-deep), var(--gold)); border-radius: 4px; color: var(--ink); font-weight: 700; font-size: .7rem; display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; font-family: var(--mono); }
+  .gantt-scale { display: grid; grid-template-columns: minmax(120px, 34%) 1fr; gap: 10px; font-family: var(--mono); font-size: .68rem; color: var(--text-dim); }
+  .gantt-scale div:last-child { display: flex; justify-content: space-between; }
+  .edit-note { font-size: .72rem; color: var(--warn); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  textarea.editable { width: 100%; min-height: 150px; font: inherit; font-size: .9rem; line-height: 1.5; border: 1px dashed var(--warn); border-radius: var(--radius); padding: 10px; background: var(--warn-wash); }
+  .timer-badge { font-family: var(--mono); font-size: .8rem; background: var(--ok-wash); color: var(--ok); border-radius: 999px; padding: 3px 10px; }
+  @media (max-width: 600px) { .doc-cover, .doc-body { padding-left: 18px; padding-right: 18px; } .hook { flex-direction: column; align-items: flex-start; gap: 4px; } }
+</style>
+</head>
+<body>
+<div id="header"></div>
+
+<main class="container page stack">
+  <section id="presets" aria-label="Ejemplos precargados"></section>
+  <div class="hook"><strong>El despacho que cotiza primero gana.</strong><span>Esto te pone a cotizar en 5 minutos en vez de 3 días.</span></div>
+
+  <div class="layout-sidebar">
+    <!-- ================= FORM ================= -->
+    <form id="form" class="card no-print" autocomplete="off">
+      <div class="card-title"><h2 style="margin:0">Datos de la propuesta</h2><span class="spacer"></span>
+        <button type="button" class="btn btn-sm btn-ghost" id="btn-example">Cargar ejemplo</button>
+      </div>
+
+      <div class="field">
+        <label for="despacho">Despacho</label>
+        <input id="despacho" name="despacho" type="text" required maxlength="80">
+        <span class="hint">Aparece en la portada y el encabezado del PDF.</span>
+      </div>
+      <div class="field">
+        <label for="cliente">Cliente</label>
+        <input id="cliente" name="cliente" type="text" required maxlength="100" placeholder="Ej. Familia Pérez / Constructora XYZ">
+      </div>
+      <div class="field">
+        <label for="tipo">Tipo de proyecto</label>
+        <select id="tipo" name="tipo" required></select>
+      </div>
+      <div class="field">
+        <label for="alcance">Alcance en lenguaje normal</label>
+        <textarea id="alcance" name="alcance" rows="5" required maxlength="2000" placeholder="Cuéntalo como se lo contarías a un colega: qué quiere el cliente, dónde, qué necesita entregar…"></textarea>
+      </div>
+      <div class="grid-2" style="gap:12px">
+        <div class="field">
+          <label for="monto">Monto de honorarios</label>
+          <input id="monto" name="monto" type="number" min="1000" step="500" inputmode="decimal" required placeholder="MXN antes de IVA">
+          <span class="hint">MXN, antes de IVA</span>
+        </div>
+        <div class="field">
+          <label for="plazo">Plazo total</label>
+          <input id="plazo" name="plazo" type="number" min="1" max="260" step="1" required placeholder="semanas">
+          <span class="hint">semanas</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="vigencia">Vigencia de la propuesta</label>
+        <input id="vigencia" name="vigencia" type="number" min="1" max="120" step="1" value="15">
+        <span class="hint">días naturales</span>
+      </div>
+
+      <label class="toggle"><input type="checkbox" id="respaldo"> <span><strong>Modo respaldo</strong> — usa la propuesta de ejemplo ya generada, sin llamar a la API.</span></label>
+
+      <button class="btn btn-primary btn-block" id="btn-generate" type="submit">Generar propuesta</button>
+      <p class="disclaimer" id="form-disclaimer"></p>
+    </form>
+
+    <!-- ================= RESULT ================= -->
+    <section id="result-area" aria-live="polite">
+      <div class="empty" id="empty">
+        <div class="big"><svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="#e6c169" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2.75h8.25L18.5 7v14.25H6z"/><path d="M14 2.75V7h4.5"/><path d="M8.75 9.25h6.5M8.75 12h6.5"/><path d="M8.75 17.1c.7-1.3 1.5-1.7 1.9-.9.35.7.8 1 1.4.3.55-.6 1.05-.7 1.45-.15"/><path d="M8.75 18.9h6.5"/></svg></div>
+        <p style="margin:0">Captura cliente, alcance, monto y plazo. Claude redacta la propuesta; el monto y el cronograma se calculan con tus datos.</p>
+      </div>
+      <div id="result" hidden></div>
+    </section>
+  </div>
+</main>
+
+<script type="module">
+import { loadData, tierBadge } from '../../shared/js/data.js';
+import { generateJSON, hasClaudeKey, AECError } from '../../shared/js/claude-client.js';
+import {
+  DISCLAIMER, DEFAULT_DESPACHO, TIPOS_PROYECTO, SCHEMA, EXAMPLE, PRESETS, buildSystem, buildPrompt, calcularPropuesta,
+} from './prompt.js';
+import { presetPicker } from '../../shared/js/presets.js';
+import { appHeader, openSettings, toast, banner, busy, fmt, escapeHtml, slug } from '../../shared/js/ui-components.js';
+import { createPdf } from '../../shared/js/pdf-export.js';
+
+const $ = (sel) => document.querySelector(sel);
+appHeader($('#header'), { num: '03', title: 'Generador de propuestas' });
+$('#form-disclaimer').textContent = DISCLAIMER;
+
+const data = await loadData('fianzas');
+const IVA = data.fianzas.iva;
+let fallback = null;
+let current = null;
+
+$('#tipo').innerHTML = Object.entries(TIPOS_PROYECTO).map(([k, v]) => `<option value="${k}">${escapeHtml(v)}</option>`).join('');
+$('#despacho').value = DEFAULT_DESPACHO;
+
+function readForm() {
+  const fd = new FormData($('#form'));
+  return {
+    despacho: String(fd.get('despacho') || '').trim() || DEFAULT_DESPACHO,
+    cliente: String(fd.get('cliente') || '').trim(),
+    tipo: fd.get('tipo'),
+    alcance: String(fd.get('alcance') || '').trim(),
+    monto: Number(fd.get('monto')),
+    plazoSemanas: Math.round(Number(fd.get('plazo'))),
+    vigenciaDias: Math.max(1, Math.round(Number(fd.get('vigencia')) || 15)),
+  };
+}
+
+function fillForm(p) {
+  $('#despacho').value = p.despacho;
+  $('#cliente').value = p.cliente;
+  $('#tipo').value = p.tipo;
+  $('#alcance').value = p.alcance;
+  $('#monto').value = p.monto;
+  $('#plazo').value = p.plazoSemanas;
+  $('#vigencia').value = p.vigenciaDias;
+}
+
+const picker = presetPicker($('#presets'), { presets: PRESETS, onSelect: (p) => { fillForm(p.data); $('#btn-generate').focus({ preventScroll: true }); toast(`Ejemplo cargado: ${p.title}. Presiona Generar.`); } });
+$('#btn-example').addEventListener('click', () => picker.select(PRESETS[0].id));
+
+async function loadFallback() {
+  fallback ??= await fetch('ejemplo-propuesta.json').then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); });
+  return fallback;
+}
+
+$('#form').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  let params = readForm();
+  if (!params.cliente || !params.alcance) { toast('Captura el cliente y el alcance', 'error'); return; }
+  if (!(params.monto >= 1000)) { toast('Captura un monto de al menos $1,000', 'error'); return; }
+  if (!(params.plazoSemanas >= 1)) { toast('Captura un plazo en semanas', 'error'); return; }
+
+  if ($('#respaldo').checked) {
+    // Backup mode: the pre-generated text belongs to the example, so show the example inputs with it.
+    fillForm({ ...EXAMPLE, despacho: params.despacho });
+    params = { ...EXAMPLE, despacho: params.despacho, vigenciaDias: params.vigenciaDias };
+    render(params, await loadFallback(), 'respaldo', 0);
+    return;
+  }
+  if (!hasClaudeKey()) {
+    toast('Primero guarda tu API key de Anthropic');
+    if (!(await openSettings())) return;
+  }
+
+  const restore = busy($('#btn-generate'), 'Redactando propuesta…');
+  const t0 = Date.now();
+  showLoading(t0);
+  try {
+    const { data: scope } = await generateJSON({
+      system: buildSystem(),
+      prompt: buildPrompt(params),
+      schema: SCHEMA,
+      effort: 'low',
+      maxTokens: 16000,
+      onProgress: ({ chars }) => { const el = $('#progress-chars'); if (el) el.textContent = `${chars.toLocaleString('es-MX')} caracteres recibidos`; },
+    });
+    if (!scope.fases?.length) throw new AECError('Claude no devolvió fases. Inténtalo de nuevo.');
+    render(params, scope, 'claude', Date.now() - t0);
+  } catch (err) {
+    const msg = err instanceof AECError ? err.message : 'No se pudo generar la propuesta.';
+    console.error(err);
+    showError(msg);
+    toast(`${msg} Puedes activar el modo respaldo.`, 'error');
+  } finally {
+    restore();
+  }
+});
+
+// ==========================================================================
+// Rendering
+// ==========================================================================
+
+let timer;
+function showLoading(t0) {
+  $('#empty').hidden = true;
+  const res = $('#result');
+  res.hidden = false;
+  res.innerHTML = `<div class="empty"><span class="scan" aria-hidden="true"></span><div class="scan-label">Generando…</div>
+    <p><strong>Claude está redactando la propuesta…</strong></p>
+    <p class="dim" style="font-family:var(--mono);font-size:.8rem"><span id="progress-secs">0 s</span> · <span id="progress-chars">pensando</span></p>
+    <p class="dim" style="font-size:.8rem;margin:0">El monto y el cronograma se calculan con tus datos, no con la IA.</p></div>`;
+  clearInterval(timer);
+  timer = setInterval(() => {
+    const el = $('#progress-secs');
+    if (!el) return clearInterval(timer);
+    el.textContent = `${Math.round((Date.now() - t0) / 1000)} s`;
+  }, 500);
+}
+
+function showError(msg) {
+  clearInterval(timer);
+  $('#result').innerHTML = `<div class="reveal">${banner('danger', `<strong>No se pudo generar.</strong> ${escapeHtml(msg)} Activa <strong>Modo respaldo</strong> para mostrar la propuesta de ejemplo.`)}</div>`;
+}
+
+function addDays(days) { const d = new Date(); d.setDate(d.getDate() + days); return d; }
+
+function defaultConditions(params, r) {
+  const fin = fmt.date(addDays(params.vigenciaDias));
+  return [
+    `Forma de pago: un pago al inicio de cada fase por el importe indicado en la tabla de inversión (${r.fases.length} pagos).`,
+    `Los montos no incluyen IVA (${r.totales.ivaPct}%). Pago por transferencia electrónica; se emite CFDI por cada pago.`,
+    'El plazo corre a partir del primer pago y de la entrega de la información solicitada al cliente.',
+    'Cambios de alcance solicitados después de aprobada una fase se cotizan por separado.',
+    `Vigencia: ${params.vigenciaDias} días naturales a partir de la fecha de emisión (hasta el ${fin}).`,
+  ].join('\n');
+}
+
+function folio() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `PROP-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;
+}
+
+function render(params, scope, source, ms) {
+  clearInterval(timer);
+  const r = calcularPropuesta({ monto: params.monto, plazoSemanas: params.plazoSemanas, ivaPct: IVA }, scope);
+  current = { params, scope, r, source, folio: folio(), condiciones: defaultConditions(params, r) };
+  const total = r.plazoSemanas;
+  const pos = (w) => `${((w - 1) / total) * 100}%`;
+  const width = (f) => `${(Math.max(f.semanas, 1) / total) * 100}%`;
+
+  $('#empty').hidden = true;
+  $('#result').hidden = false;
+  $('#result').innerHTML = `
+    <div class="stack reveal">
+      ${source === 'respaldo' ? banner('warn', '<strong>Modo respaldo.</strong> Propuesta de ejemplo pre-generada; el monto, el cronograma y el IVA sí se calcularon en vivo.') : ''}
+      <div class="row no-print" style="align-items:center">
+        ${ms ? `<span class="timer-badge">Lista en ${Math.round(ms / 1000)} s</span>` : ''}
+        <span class="spacer"></span>
+        <button class="btn btn-primary" id="btn-pdf" type="button">Descargar PDF</button>
+        <button class="btn btn-ghost" id="btn-new" type="button">Nueva propuesta</button>
+      </div>
+
+      <article class="doc">
+        <div class="doc-cover">
+          <div class="eyebrow">${escapeHtml(params.despacho)} · Propuesta de servicios profesionales</div>
+          <h2>${escapeHtml(scope.titulo_proyecto)}</h2>
+          <div class="meta">
+            <span>Para: <strong>${escapeHtml(params.cliente)}</strong></span>
+            <span>${escapeHtml(current.folio)}</span>
+            <span>${fmt.date()}</span>
+            <span>Vigencia: ${params.vigenciaDias} días</span>
+          </div>
+        </div>
+        <div class="doc-body">
+          <section><h3>Entendimiento del proyecto</h3>${scope.entendimiento.map((p) => `<p>${escapeHtml(p)}</p>`).join('')}
+            <div class="eyebrow" style="margin:8px 0 4px">Objetivos</div>
+            <ul>${scope.objetivos.map((o) => `<li>${escapeHtml(o)}</li>`).join('')}</ul></section>
+
+          <section><h3>Alcance de servicios</h3>
+            <ul>${scope.servicios.map((s) => `<li><strong>${escapeHtml(s.nombre)}.</strong> ${escapeHtml(s.descripcion)}</li>`).join('')}</ul>
+            <div class="eyebrow" style="margin:10px 0 4px">No incluye</div>
+            <ul>${scope.exclusiones.map((s) => `<li>${escapeHtml(s)}</li>`).join('')}</ul></section>
+
+          <section><h3>Entregables por fase</h3>
+            ${r.fases.map((f) => `<div class="fase"><div class="t">Fase ${f.n}. ${escapeHtml(f.nombre)}</div>
+              <div class="dim" style="font-size:.88rem">${escapeHtml(f.descripcion)}</div>
+              <ul style="font-size:.88rem">${f.entregables.map((e) => `<li>${escapeHtml(e)}</li>`).join('')}</ul></div>`).join('')}</section>
+
+          <section><h3>Cronograma · ${total} semanas</h3>
+            <div class="gantt">
+              ${r.fases.map((f) => `<div class="gantt-row"><div>${f.n}. ${escapeHtml(f.nombre)}</div>
+                <div class="gantt-track"><div class="gantt-bar" style="left:${pos(f.semanaInicio)};width:${width(f)}" title="Semanas ${f.semanaInicio}–${f.semanaFin}">${f.semanas ? `S${f.semanaInicio}–${f.semanaFin}` : ''}</div></div></div>`).join('')}
+              <div class="gantt-scale"><div></div><div><span>Semana 1</span><span>Semana ${total}</span></div></div>
+            </div></section>
+
+          <section><h3>Inversión</h3>
+            <div class="table-wrap" style="box-shadow:none">
+              <table class="data">
+                <thead><tr><th>Fase</th><th class="num">Semanas</th><th class="num">%</th><th class="num">Importe</th></tr></thead>
+                <tbody>
+                  ${r.fases.map((f) => `<tr><td>${f.n}. ${escapeHtml(f.nombre)}</td><td class="num">${f.semanaInicio}–${f.semanaFin}</td><td class="num">${f.pctInversion}%</td><td class="num">${fmt.money(f.importe)}</td></tr>`).join('')}
+                  <tr class="total"><td colspan="3">Subtotal honorarios</td><td class="num">${fmt.money(r.totales.subtotal)}</td></tr>
+                  <tr class="total"><td colspan="3">IVA ${r.totales.ivaPct}%</td><td class="num">${fmt.money(r.totales.iva)}</td></tr>
+                  <tr class="grand"><td colspan="3">Total</td><td class="num">${fmt.money(r.totales.total)}</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="dim" style="font-size:.78rem;margin:6px 0 0">Monto y plazo: capturados por el despacho. Distribución por fase: sugerida por IA y calculada por el sistema ${tierBadge(3)} · IVA ${tierBadge(data.fianzas._meta.tier)}</p></section>
+
+          <section><h3>Condiciones de pago y vigencia</h3>
+            <div class="edit-note">✎ Editable — revisa antes de descargar</div>
+            <textarea class="editable" id="condiciones" aria-label="Condiciones de pago y vigencia">${escapeHtml(current.condiciones)}</textarea>
+            <div class="eyebrow" style="margin:10px 0 4px">Para arrancar necesitamos</div>
+            <ul>${scope.requisitos_cliente.map((s) => `<li>${escapeHtml(s)}</li>`).join('')}</ul></section>
+
+          <section><h3>Siguiente paso</h3><p>${escapeHtml(scope.cierre)}</p>
+            <p class="disclaimer">${escapeHtml(DISCLAIMER)}</p></section>
+        </div>
+      </article>
+    </div>`;
+
+  $('#condiciones').addEventListener('input', (e) => { current.condiciones = e.target.value; });
+  $('#btn-pdf').addEventListener('click', () => downloadPdf().catch((e) => { console.error(e); toast('No se pudo generar el PDF', 'error'); }));
+  $('#btn-new').addEventListener('click', () => {
+    current = null;
+    $('#result').hidden = true;
+    $('#empty').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    $('#cliente').focus();
+  });
+  if (window.matchMedia('(max-width: 900px)').matches) $('#result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ==========================================================================
+// PDF
+// ==========================================================================
+
+async function downloadPdf() {
+  const { params, scope, r, folio: id, condiciones } = current;
+  const pdf = await createPdf({
+    title: params.despacho,
+    subtitle: `Propuesta de servicios profesionales · ${params.cliente}`,
+    docId: id,
+    disclaimer: DISCLAIMER,
+  });
+  const { doc } = pdf;
+  const W = doc.internal.pageSize.getWidth();
+
+  // ---- Portada ----
+  doc.setFillColor(27, 94, 126).rect(16, 48, W - 32, 90, 'F');
+  doc.setTextColor(255).setFont('helvetica', 'normal').setFontSize(11);
+  doc.text('PROPUESTA DE SERVICIOS PROFESIONALES', 26, 64);
+  doc.setFont('helvetica', 'bold').setFontSize(22);
+  doc.text(doc.splitTextToSize(scope.titulo_proyecto, W - 52), 26, 80);
+  doc.setFont('helvetica', 'normal').setFontSize(12);
+  doc.text(`Preparada para: ${params.cliente}`, 26, 122);
+  doc.setFontSize(10).text(`${params.despacho} · ${fmt.date()}`, 26, 130);
+  doc.setTextColor(26, 26, 26).setFontSize(10);
+  const cov = [
+    ['Folio', id],
+    ['Tipo de proyecto', TIPOS_PROYECTO[params.tipo] ?? params.tipo],
+    ['Plazo', `${r.plazoSemanas} semanas`],
+    ['Inversión', `${fmt.money(r.totales.subtotal)} + IVA`],
+    ['Vigencia', `${params.vigenciaDias} días naturales (hasta el ${fmt.date(addDays(params.vigenciaDias))})`],
+  ];
+  cov.forEach(([k, v], i) => {
+    doc.setFont('helvetica', 'bold').setTextColor(107, 107, 107).text(k, 26, 156 + i * 8);
+    doc.setFont('helvetica', 'normal').setTextColor(26, 26, 26).text(String(v), 70, 156 + i * 8);
+  });
+  pdf.space(10000); // force the next section onto a new page
+
+  pdf.heading('1. Entendimiento del proyecto');
+  scope.entendimiento.forEach((p) => pdf.paragraph(p));
+  pdf.paragraph('Objetivos', { bold: true, size: 9.5 });
+  pdf.bullets(scope.objetivos, { size: 9 });
+
+  pdf.heading('2. Alcance de servicios');
+  pdf.table({
+    head: [['Servicio', 'Descripción']],
+    body: scope.servicios.map((s) => [s.nombre, s.descripcion]),
+    columnStyles: { 0: { cellWidth: 52, fontStyle: 'bold' } },
+    styles: { fontSize: 8.5 },
+  });
+  pdf.paragraph('No incluye', { bold: true, size: 9.5 });
+  pdf.bullets(scope.exclusiones, { size: 8.8 });
+
+  pdf.heading('3. Entregables por fase');
+  for (const f of r.fases) {
+    pdf.paragraph(`Fase ${f.n}. ${f.nombre}`, { bold: true, size: 9.5 });
+    pdf.paragraph(f.descripcion, { size: 8.8, color: [107, 107, 107] });
+    pdf.bullets(f.entregables, { size: 8.8 });
+  }
+
+  pdf.heading(`4. Cronograma (${r.plazoSemanas} semanas)`);
+  const total = r.plazoSemanas;
+  pdf.table({
+    head: [['Fase', 'Semanas', 'Duración', 'Programa']],
+    body: r.fases.map((f) => [`${f.n}. ${f.nombre}`, `${f.semanaInicio}–${f.semanaFin}`, `${f.semanas} sem`, '']),
+    columnStyles: { 0: { cellWidth: 62 }, 1: { cellWidth: 18, halign: 'center' }, 2: { cellWidth: 18, halign: 'center' } },
+    styles: { fontSize: 8.5, minCellHeight: 7 },
+    didParseCell: () => {},
+  });
+  // Draw Gantt bars over the "Programa" column of the table just drawn.
+  {
+    const t = doc.lastAutoTable;
+    const col = t.columns[3];
+    const rows = t.body;
+    rows.forEach((row, i) => {
+      const cell = row.cells[3];
+      if (!cell || cell.x == null) return;
+      const f = r.fases[i];
+      const x0 = cell.x + 1.5;
+      const wAll = col.width - 3;
+      const bx = x0 + ((f.semanaInicio - 1) / total) * wAll;
+      const bw = Math.max((Math.max(f.semanas, 1) / total) * wAll, 1);
+      doc.setFillColor(27, 94, 126).rect(bx, cell.y + 1.6, bw, cell.height - 3.2, 'F');
+    });
+  }
+
+  pdf.heading('5. Inversión');
+  pdf.table({
+    head: [['Fase', 'Semanas', '%', 'Importe']],
+    body: r.fases.map((f) => [`${f.n}. ${f.nombre}`, `${f.semanaInicio}–${f.semanaFin}`, `${f.pctInversion}%`, fmt.money(f.importe)]),
+    foot: [
+      [{ content: 'Subtotal honorarios', colSpan: 3 }, fmt.money(r.totales.subtotal)],
+      [{ content: `IVA ${r.totales.ivaPct}%`, colSpan: 3 }, fmt.money(r.totales.iva)],
+      [{ content: 'TOTAL', colSpan: 3 }, fmt.money(r.totales.total)],
+    ],
+    columnStyles: { 1: { cellWidth: 22, halign: 'center' }, 2: { cellWidth: 16, halign: 'right' }, 3: { cellWidth: 34, halign: 'right' } },
+    styles: { fontSize: 9 },
+    didParseCell: (d) => { if ((d.section === 'foot' || d.section === 'head') && d.column.index >= 2) d.cell.styles.halign = 'right'; },
+  });
+
+  pdf.heading('6. Condiciones de pago y vigencia');
+  pdf.bullets(condiciones.split('\n').map((s) => s.trim()).filter(Boolean), { size: 9 });
+  pdf.paragraph('Para arrancar necesitamos', { bold: true, size: 9.5 });
+  pdf.bullets(scope.requisitos_cliente, { size: 9 });
+
+  pdf.heading('7. Siguiente paso');
+  pdf.paragraph(scope.cierre);
+  pdf.signatures([params.despacho, `Aceptación: ${params.cliente}`]);
+  pdf.save(`${slug(`propuesta-${params.cliente}`)}.pdf`);
+}
+</script>
+</body>
+</html>

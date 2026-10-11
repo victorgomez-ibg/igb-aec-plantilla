@@ -1,0 +1,10 @@
+{
+  "_meta": {"tier": 1, "fuente": "INEGI Comunicados 1/25 y 1/26, DOF"},
+  "uma": {
+    "2025": {"diario": 113.14, "mensual": 3439.46, "anual": 41273.52, "vigencia": "2025-02-01 a 2026-01-31", "incremento": 4.21},
+    "2026": {"diario": 117.31}
+  },
+  "fasar": {"base": "Salario base tabulado Sn", "art": "RLOPSRM Art. 190"},
+  "jerarquia_mano_obra": ["Maestro de obra", "Oficial", "Ayudante", "Peón", "Cabo/Jefe de cuadrilla"],
+  "_gap": "Salarios diarios específicos de Querétaro (albañil, electricista, plomero, herrero) NO disponibles en fuentes libres. Requiere licencia BIMSA/Neodata/OPUS o tabuladores CMIC Querétaro."
+}

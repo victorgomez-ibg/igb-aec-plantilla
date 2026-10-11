@@ -1,0 +1,10 @@
+{
+  "name": "igb-aec-suite",
+  "private": true,
+  "type": "module",
+  "description": "No build step. This file only marks shared/js as ES modules for `node --test`.",
+  "scripts": {
+    "test": "node --test shared/js/",
+    "serve": "python3 -m http.server 8700"
+  }
+}

@@ -1,0 +1,393 @@
+{
+  "resumen_alcance": "Casa habitación de 180 m² en dos niveles en Cadereyta de Montes, Querétaro, con 3 recámaras, 2.5 baños y cochera para dos autos. Estructura de concreto reforzado con losa maciza, muros de block y acabados de nivel medio. Incluye instalaciones hidrosanitarias y eléctricas completas, carpintería, herrería y cancelería de aluminio.",
+  "supuestos": [
+    "Sistema estructural a base de marcos de concreto reforzado (castillos y dalas) con muros de block hueco de 15x20x40 cm.",
+    "Cimentación de zapatas corridas y aisladas con contratrabes, desplante a 1.20 m sobre terreno con capacidad de carga media; no se considera mejoramiento profundo.",
+    "Entrepiso y azotea con losa maciza de concreto f'c=250 kg/cm² de 12 cm de espesor, colada en sitio.",
+    "Altura de entrepiso 2.70 m libres; superficie 90 m² por nivel más cochera descubierta.",
+    "Diseño estructural conforme al Manual de Obras Civiles de CFE y NTC del Reglamento de Construcciones de la CDMX como supletorias; zona sísmica B.",
+    "Acabados nivel medio: piso cerámico nacional, muros aplanados y pintados, plafón de yeso en áreas puntuales.",
+    "Suministro de agua y energía eléctrica disponibles en el predio; no se incluye acometida en media tensión ni cisterna especial.",
+    "No se incluyen trabajos de urbanización exterior, jardinería ni barda perimetral."
+  ],
+  "partidas": [
+    {
+      "categoria": "preliminares",
+      "descripcion": "Limpieza, desmonte y despalme del terreno con retiro de material producto a tiro autorizado",
+      "unidad": "m²",
+      "cantidad": 150,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 1.2
+    },
+    {
+      "categoria": "preliminares",
+      "descripcion": "Trazo y nivelación del terreno con equipo topográfico, estableciendo ejes y bancos de nivel",
+      "unidad": "m²",
+      "cantidad": 110,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 1
+    },
+    {
+      "categoria": "preliminares",
+      "descripcion": "Construcción de obra falsa provisional: bodega, sanitario y tomas de agua y energía",
+      "unidad": "lote",
+      "cantidad": 1,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 1.8
+    },
+    {
+      "categoria": "cimentacion",
+      "descripcion": "Excavación a mano en cepas para zapatas y contratrabes en material tipo II, incluye afine",
+      "unidad": "m³",
+      "cantidad": 55,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 3.2
+    },
+    {
+      "categoria": "cimentacion",
+      "descripcion": "Relleno y compactación con material de banco en capas de 20 cm al 90% Proctor",
+      "unidad": "m³",
+      "cantidad": 40,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 2.5
+    },
+    {
+      "categoria": "cimentacion",
+      "descripcion": "Plantilla de concreto pobre f'c=100 kg/cm² de 5 cm de espesor bajo zapatas",
+      "unidad": "m²",
+      "cantidad": 45,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 1
+    },
+    {
+      "categoria": "cimentacion",
+      "descripcion": "Suministro de concreto premezclado f'c=250 kg/cm² para cimentación, estructura y losas",
+      "unidad": "m³",
+      "cantidad": 56,
+      "tipo": "suministro",
+      "material_clave": "concreto_premezclado_m3_qro",
+      "peso": 0
+    },
+    {
+      "categoria": "cimentacion",
+      "descripcion": "Suministro de arena y grava para firmes, morteros y concretos hechos en obra",
+      "unidad": "carro",
+      "cantidad": 8,
+      "tipo": "suministro",
+      "material_clave": "arena_grava_carro",
+      "peso": 0
+    },
+    {
+      "categoria": "cimentacion",
+      "descripcion": "Habilitado, armado y colado de zapatas y contratrabes: mano de obra, cimbra y equipo",
+      "unidad": "m³",
+      "cantidad": 20,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 6
+    },
+    {
+      "categoria": "cimentacion",
+      "descripcion": "Firme de concreto de 10 cm armado con malla electrosoldada 6x6-10/10 sobre plantilla compactada",
+      "unidad": "m²",
+      "cantidad": 92,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 4
+    },
+    {
+      "categoria": "estructura",
+      "descripcion": "Suministro de acero de refuerzo corrugado fy=4200 kg/cm² para cimentación y estructura",
+      "unidad": "kg",
+      "cantidad": 4800,
+      "tipo": "suministro",
+      "material_clave": "acero_refuerzo_kg_qro",
+      "peso": 0
+    },
+    {
+      "categoria": "estructura",
+      "descripcion": "Suministro de alambrón de 1/4\" para armados de castillos, dalas y estribos",
+      "unidad": "kg",
+      "cantidad": 260,
+      "tipo": "suministro",
+      "material_clave": "alambron_kg",
+      "peso": 0
+    },
+    {
+      "categoria": "estructura",
+      "descripcion": "Suministro de alambre recocido calibre 16 para amarre de armados",
+      "unidad": "kg",
+      "cantidad": 150,
+      "tipo": "suministro",
+      "material_clave": "alambre_recocido_kg",
+      "peso": 0
+    },
+    {
+      "categoria": "estructura",
+      "descripcion": "Columnas y castillos de concreto armado: habilitado de acero, cimbra aparente y colado",
+      "unidad": "m³",
+      "cantidad": 9,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 6.5
+    },
+    {
+      "categoria": "estructura",
+      "descripcion": "Trabes y dalas de cerramiento de concreto armado: mano de obra, cimbra, apuntalamiento y colado",
+      "unidad": "m³",
+      "cantidad": 8,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 6
+    },
+    {
+      "categoria": "estructura",
+      "descripcion": "Losa maciza de concreto de 12 cm en entrepiso y azotea: cimbra, obra falsa, armado y colado",
+      "unidad": "m²",
+      "cantidad": 185,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 14
+    },
+    {
+      "categoria": "estructura",
+      "descripcion": "Escalera de concreto armado con descanso, incluye cimbra, armado, colado y acabado aparente",
+      "unidad": "m²",
+      "cantidad": 14,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 3
+    },
+    {
+      "categoria": "albanileria",
+      "descripcion": "Suministro de block hueco de concreto de 15x20x40 cm para muros de carga y divisorios",
+      "unidad": "pza",
+      "cantidad": 4100,
+      "tipo": "suministro",
+      "material_clave": "block_concreto_15x20x40",
+      "peso": 0
+    },
+    {
+      "categoria": "albanileria",
+      "descripcion": "Suministro de cemento gris tipo CPC 30R en bulto de 50 kg para morteros y firmes",
+      "unidad": "bulto",
+      "cantidad": 260,
+      "tipo": "suministro",
+      "material_clave": "cemento_gris_bulto_50kg",
+      "peso": 0
+    },
+    {
+      "categoria": "albanileria",
+      "descripcion": "Suministro de mortero premezclado para pegado de block y aplanados",
+      "unidad": "ton",
+      "cantidad": 9,
+      "tipo": "suministro",
+      "material_clave": "mortero_tonelada",
+      "peso": 0
+    },
+    {
+      "categoria": "albanileria",
+      "descripcion": "Colocación de muros de block a soga: mano de obra, andamios y herramienta",
+      "unidad": "m²",
+      "cantidad": 330,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 9
+    },
+    {
+      "categoria": "albanileria",
+      "descripcion": "Impermeabilización de azotea con sistema prefabricado 3.5 mm, 5 años, incluye imprimación y chaflanes",
+      "unidad": "m²",
+      "cantidad": 95,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 3.5
+    },
+    {
+      "categoria": "albanileria",
+      "descripcion": "Relleno de pendientes en azotea y colocación de bajadas pluviales de PVC de 4\"",
+      "unidad": "m²",
+      "cantidad": 95,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 2
+    },
+    {
+      "categoria": "instalacion_hidraulica",
+      "descripcion": "Salida hidráulica en tubería CPVC de 1/2\" con conexiones, pruebas y ranurado en muro",
+      "unidad": "salida",
+      "cantidad": 22,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 5
+    },
+    {
+      "categoria": "instalacion_hidraulica",
+      "descripcion": "Alimentación general, tinaco 1100 L, bomba y equipo hidroneumático con línea de distribución",
+      "unidad": "lote",
+      "cantidad": 1,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 4
+    },
+    {
+      "categoria": "instalacion_sanitaria",
+      "descripcion": "Salida sanitaria en PVC de 2\" y 4\" con conexiones, pendientes y pruebas hidráulicas",
+      "unidad": "salida",
+      "cantidad": 18,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 4.5
+    },
+    {
+      "categoria": "instalacion_sanitaria",
+      "descripcion": "Red de drenaje exterior, registros de 40x60 cm y descarga a colector municipal",
+      "unidad": "lote",
+      "cantidad": 1,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 3
+    },
+    {
+      "categoria": "instalacion_sanitaria",
+      "descripcion": "Suministro y colocación de muebles de baño: WC, lavabo, regadera y accesorios, gama media",
+      "unidad": "jgo",
+      "cantidad": 3,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 4.5
+    },
+    {
+      "categoria": "instalacion_electrica",
+      "descripcion": "Salida eléctrica para contacto, apagador o centro de carga en poliducto con cable THW",
+      "unidad": "salida",
+      "cantidad": 68,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 7
+    },
+    {
+      "categoria": "instalacion_electrica",
+      "descripcion": "Tablero de distribución, acometida CFE, tierra física y circuitos derivados con protecciones",
+      "unidad": "lote",
+      "cantidad": 1,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 3.5
+    },
+    {
+      "categoria": "acabados_pisos",
+      "descripcion": "Piso cerámico nacional 45x45 cm asentado con adhesivo, incluye boquilla y corte",
+      "unidad": "m²",
+      "cantidad": 170,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 8
+    },
+    {
+      "categoria": "acabados_pisos",
+      "descripcion": "Zoclo cerámico de 7 cm en áreas secas, asentado con adhesivo y emboquillado",
+      "unidad": "ml",
+      "cantidad": 130,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 1.5
+    },
+    {
+      "categoria": "acabados_muros",
+      "descripcion": "Aplanado de mortero acabado fino en muros interiores y exteriores, incluye andamios",
+      "unidad": "m²",
+      "cantidad": 620,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 9
+    },
+    {
+      "categoria": "acabados_muros",
+      "descripcion": "Azulejo cerámico en muros de baños y cocina hasta 1.80 m, incluye boquilla",
+      "unidad": "m²",
+      "cantidad": 75,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 4
+    },
+    {
+      "categoria": "acabados_plafones",
+      "descripcion": "Plafón de tablaroca sobre bastidor de canal metálico en áreas de ductos y closets",
+      "unidad": "m²",
+      "cantidad": 35,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 3
+    },
+    {
+      "categoria": "carpinteria",
+      "descripcion": "Puerta interior de tambor con marco de pino y herrajes, acabado esmaltado",
+      "unidad": "pza",
+      "cantidad": 9,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 5
+    },
+    {
+      "categoria": "carpinteria",
+      "descripcion": "Muebles de cocina y clósets en melamina 16 mm con herrajes, gama media",
+      "unidad": "ml",
+      "cantidad": 16,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 7
+    },
+    {
+      "categoria": "herreria",
+      "descripcion": "Portón corredizo para cochera dos autos en perfil tubular, incluye guías y acabado",
+      "unidad": "m²",
+      "cantidad": 12,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 4
+    },
+    {
+      "categoria": "herreria",
+      "descripcion": "Barandal de escalera y protecciones de ventana en perfil tubular con primario y esmalte",
+      "unidad": "ml",
+      "cantidad": 22,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 3
+    },
+    {
+      "categoria": "canceleria",
+      "descripcion": "Cancelería de aluminio natural serie 3\" con cristal de 6 mm, corredizas y fijas",
+      "unidad": "m²",
+      "cantidad": 34,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 7
+    },
+    {
+      "categoria": "pintura",
+      "descripcion": "Pintura vinílica lavable a dos manos sobre muros y plafones, incluye sellador y resane",
+      "unidad": "m²",
+      "cantidad": 640,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 5
+    },
+    {
+      "categoria": "limpieza",
+      "descripcion": "Limpieza gruesa y fina de obra con retiro de escombro a tiro autorizado",
+      "unidad": "m²",
+      "cantidad": 180,
+      "tipo": "parametrica",
+      "material_clave": null,
+      "peso": 1.5
+    }
+  ]
+}

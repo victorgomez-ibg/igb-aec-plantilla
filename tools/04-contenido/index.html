@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contenido de autoridad · IGB AEC Suite</title>
+<link rel="icon" href="../../shared/img/logo_igb.png">
+<link rel="stylesheet" href="../../shared/css/aec-theme.css">
+<style>
+  .layout-sidebar > * { min-width: 0; }
+  .hook { display: flex; gap: 14px; align-items: center; background: linear-gradient(90deg, rgba(230,193,105,.14), rgba(230,193,105,.03)); color: var(--paper); border: 1px solid var(--line-strong); border-left: 3px solid var(--gold); border-radius: var(--radius-lg); padding: 14px 18px; }
+  .hook strong { font-family: var(--display); font-weight: 600; color: var(--gold-bright); }
+  .hook strong { font-size: 1.05rem; }
+  .hook span { opacity: .9; font-size: .92rem; }
+  .toggle { display: flex; gap: 10px; align-items: center; font-size: .85rem; padding: 10px 12px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--surface-sunken); }
+  .toggle input { width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+  .drop { display: grid; place-items: center; text-align: center; gap: 6px; border: 2px dashed var(--line); border-radius: var(--radius-lg); padding: 18px; cursor: pointer; background: var(--surface-sunken); color: var(--text-dim); font-size: .85rem; min-height: 120px; }
+  .drop:hover, .drop.over { border-color: var(--accent); color: var(--accent); }
+  .drop img { max-width: 100%; max-height: 200px; border-radius: var(--radius); }
+  .drop input { display: none; }
+  .out h3 { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 600; }
+  .out h3::before { content: ''; flex: none; width: 9px; height: 9px; border: 1.5px solid var(--gold); transform: rotate(45deg); }
+  .out h3 .spacer { flex: 1; }
+  .li-post { border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 16px; background: var(--navy-2); }
+  .li-head { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .li-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--gold); color: var(--ink); display: grid; place-items: center; font-weight: 700; }
+  .li-text { white-space: pre-wrap; font-size: .92rem; line-height: 1.5; }
+  .li-img { width: 100%; border-radius: var(--radius); margin-top: 10px; display: block; }
+  .tags { color: var(--accent); font-size: .88rem; margin-top: 8px; }
+  .strip { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(220px, 1fr); gap: 12px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory; }
+  .slide { scroll-snap-align: start; display: grid; gap: 6px; }
+  .slide canvas { width: 100%; height: auto; aspect-ratio: 1; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--line); }
+  .caption { white-space: pre-wrap; font-size: .9rem; line-height: 1.5; background: var(--surface-sunken); border-radius: var(--radius); padding: 12px; }
+  .ficha { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: .88rem; }
+  .ficha dt { color: var(--text-dim); font-weight: 600; }
+  .ficha dd { margin: 0; }
+  .renders { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 12px; }
+  .render { display: grid; gap: 6px; }
+  .render .frame { position: relative; aspect-ratio: 4/3; border-radius: var(--radius); overflow: hidden; background: var(--surface-sunken); border: 1px solid var(--line); display: grid; place-items: center; text-align: center; font-size: .8rem; color: var(--text-dim); padding: 8px; }
+  .render .frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .render .tag { position: absolute; left: 8px; bottom: 8px; background: rgba(15,20,25,.72); color: #fff; font-size: .68rem; padding: 2px 8px; border-radius: 999px; }
+  .render .label { display: flex; align-items: center; gap: 8px; font-size: .85rem; font-weight: 600; }
+  .render .label .spacer { flex: 1; }
+  .timer-badge { font-family: var(--mono); font-size: .8rem; background: var(--ok-wash); color: var(--ok); border-radius: 999px; padding: 3px 10px; }
+  @media (max-width: 600px) { .hook { flex-direction: column; align-items: flex-start; gap: 4px; } .strip { grid-auto-columns: 78%; } }
+</style>
+</head>
+<body>
+<div id="header"></div>
+
+<main class="container page stack">
+  <section id="presets" aria-label="Ejemplos precargados"></section>
+  <div class="hook"><strong>Cada obra que terminas es contenido que te trae la siguiente.</strong><span>Una descripción y una foto → LinkedIn, carrusel, portafolio y 3 renders.</span></div>
+
+  <div class="layout-sidebar">
+    <!-- ================= FORM ================= -->
+    <form id="form" class="card no-print" autocomplete="off">
+      <div class="card-title"><h2 style="margin:0">Obra terminada</h2><span class="spacer"></span>
+        <button type="button" class="btn btn-sm btn-ghost" id="btn-example">Cargar ejemplo</button>
+      </div>
+
+      <div class="field">
+        <label for="despacho">Despacho</label>
+        <input id="despacho" name="despacho" type="text" required maxlength="80">
+      </div>
+      <div class="field">
+        <label for="descripcion">Describe el proyecto</label>
+        <textarea id="descripcion" name="descripcion" rows="7" required maxlength="2500" placeholder="Nombre, ubicación, para quién, qué reto resolvieron, materiales, lo que más te gusta de la obra…"></textarea>
+        <span class="hint">Solo se usan los datos que escribas: la IA no inventa cifras ni clientes.</span>
+      </div>
+      <div class="field">
+        <span style="font-size:.85rem;font-weight:550;color:var(--heading)">Foto de la obra</span>
+        <label class="drop" id="drop" tabindex="0">
+          <input type="file" id="foto" accept="image/*">
+          <span id="drop-empty"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#e6c169" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.3l1.4-2h7.6l1.4 2h2.3A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.5"/></svg><br><strong>Sube 1 foto</strong><br>o arrástrala aquí</span>
+          <img id="drop-img" alt="Foto de la obra" hidden>
+        </label>
+        <span class="hint" id="foto-hint">Se usa como referencia para los renders.</span>
+      </div>
+
+      <label class="toggle"><input type="checkbox" id="respaldo"> <span><strong>Modo respaldo</strong> — usa el paquete de ejemplo ya generado, sin llamar a las APIs.</span></label>
+
+      <button class="btn btn-primary btn-block" id="btn-generate" type="submit">Generar paquete de contenido</button>
+      <p class="disclaimer" id="form-disclaimer"></p>
+    </form>
+
+    <!-- ================= RESULT ================= -->
+    <section id="result-area" aria-live="polite">
+      <div class="empty" id="empty">
+        <div class="big"><svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="#e6c169" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7.25" y="2.75" width="14" height="13.5" rx="1.5"/><path d="M4.25 6.5v12.25a1.5 1.5 0 0 0 1.5 1.5H17"/><path d="M7.25 12.75l3.75-3.5 3 2.75 2.25-1.75 5 4"/><circle cx="16.75" cy="6.75" r="1.1"/></svg></div>
+        <p style="margin:0">Describe una obra terminada y sube una foto. En menos de un minuto tienes el post de LinkedIn, el carrusel de Instagram, la descripción de portafolio y 3 renders.</p>
+      </div>
+      <div id="result" hidden></div>
+    </section>
+  </div>
+</main>
+
+<script type="module">
+import { generateJSON, hasClaudeKey, AECError } from '../../shared/js/claude-client.js';
+import { generateImage, hasGeminiKey, fileToInline } from '../../shared/js/gemini-client.js';
+import {
+  DISCLAIMER, DEFAULT_DESPACHO, EXAMPLE, PRESETS, N_LAMINAS, RENDER_VARIANTS, SCHEMA, buildSystem, buildContent, renderPrompt,
+} from './prompt.js';
+import { presetPicker } from '../../shared/js/presets.js';
+import { appHeader, openSettings, toast, banner, busy, escapeHtml, slug, downloadBlob } from '../../shared/js/ui-components.js';
+
+const $ = (sel) => document.querySelector(sel);
+appHeader($('#header'), {
+  num: '04', title: 'Contenido de autoridad', settings: false,
+  extra: '<button class="btn btn-ghost btn-sm" id="btn-settings" type="button"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#e6c169" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg> Ajustes</button>',
+});
+$('#btn-settings').addEventListener('click', () => openSettings({ gemini: true }));
+$('#form-disclaimer').textContent = DISCLAIMER;
+$('#despacho').value = DEFAULT_DESPACHO;
+
+let photo = null;      // {mimeType, base64, url}
+let current = null;    // {params, content, photo, renders: [{status, url, blob, error}]}
+let runId = 0;
+
+// ---------- photo input ----------
+
+/** Downscale to max 1280 px JPEG so Claude/Gemini uploads stay small and fast. */
+async function prepPhoto(file) {
+  const bmp = await createImageBitmap(file);
+  const scale = Math.min(1, 1280 / Math.max(bmp.width, bmp.height));
+  const c = Object.assign(document.createElement('canvas'), { width: Math.round(bmp.width * scale), height: Math.round(bmp.height * scale) });
+  c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+  const blob = await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.85));
+  const inline = await fileToInline(blob);
+  return { ...inline, mimeType: 'image/jpeg', url: URL.createObjectURL(blob) };
+}
+
+function showPhoto(p) {
+  photo = p;
+  $('#drop-img').src = p.url;
+  $('#drop-img').hidden = false;
+  $('#drop-empty').hidden = true;
+}
+
+async function takeFile(file) {
+  if (!file || !file.type.startsWith('image/')) { toast('Sube una imagen (JPG o PNG)', 'error'); return; }
+  try { showPhoto(await prepPhoto(file)); } catch (e) { console.error(e); toast('No se pudo leer la foto', 'error'); }
+}
+
+$('#foto').addEventListener('change', (e) => takeFile(e.target.files[0]));
+const drop = $('#drop');
+drop.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#foto').click(); } });
+drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); takeFile(e.dataTransfer.files[0]); });
+
+async function exampleAssets() {
+  const [content, fotoBlob] = await Promise.all([
+    fetch('ejemplo/contenido.json').then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }),
+    fetch('ejemplo/foto.jpg').then((r) => r.blob()),
+  ]);
+  const inline = await fileToInline(fotoBlob);
+  return { content, photo: { ...inline, mimeType: 'image/jpeg', url: URL.createObjectURL(fotoBlob) } };
+}
+
+async function loadPreset(pr) {
+  $('#despacho').value = pr.data.despacho;
+  $('#descripcion').value = pr.data.descripcion;
+  try {
+    const blob = await fetch(`ejemplo/${pr.foto}`).then((r) => { if (!r.ok) throw new Error(r.status); return r.blob(); });
+    showPhoto({ ...(await fileToInline(blob)), mimeType: 'image/jpeg', url: URL.createObjectURL(blob) });
+    $('#foto-hint').textContent = 'Foto de ejemplo generada por IA (obra ficticia).';
+    $('#btn-generate').focus({ preventScroll: true });
+    toast(`Ejemplo cargado: ${pr.title}. Presiona Generar.`);
+  } catch (e) { console.error(e); toast('No se pudo cargar la foto de ejemplo', 'error'); }
+}
+const picker = presetPicker($('#presets'), { presets: PRESETS, onSelect: loadPreset });
+$('#btn-example').addEventListener('click', () => picker.select(PRESETS[0].id));
+
+// ---------- generate ----------
+
+$('#form').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const params = { despacho: $('#despacho').value.trim() || DEFAULT_DESPACHO, descripcion: $('#descripcion').value.trim() };
+  if ($('#respaldo').checked) { await showBackup(params, false); return; }
+  if (params.descripcion.length < 20) { toast('Describe el proyecto con un poco más de detalle', 'error'); return; }
+  if (!hasClaudeKey()) {
+    toast('Primero guarda tus API keys');
+    if (!(await openSettings({ gemini: true }))) return;
+  }
+  const id = ++runId;
+  const t0 = Date.now();
+  const restore = busy($('#btn-generate'), 'Generando paquete…');
+  current = { params, content: null, photo, renders: RENDER_VARIANTS.map(() => ({ status: photo ? 'pending' : 'skip' })), t0 };
+  showLoading(t0);
+
+  // Renders start right away, in parallel with the text.
+  let rendersDone = Promise.resolve();
+  if (photo && hasGeminiKey()) {
+    rendersDone = Promise.all(RENDER_VARIANTS.map((v, i) => runRender(id, i)));
+  } else if (photo) {
+    current.renders = RENDER_VARIANTS.map(() => ({ status: 'error', error: 'Falta la API key de Gemini (Ajustes).' }));
+  }
+
+  try {
+    const { data } = await generateJSON({
+      system: buildSystem(),
+      prompt: buildContent(params, photo),
+      schema: SCHEMA,
+      effort: 'low',
+      maxTokens: 16000,
+      onProgress: ({ chars }) => { const el = $('#progress-chars'); if (el) el.textContent = `${chars.toLocaleString('es-MX')} caracteres`; },
+    });
+    if (id !== runId) return;
+    current.content = data;
+    current.textMs = Date.now() - t0;
+    render();
+  } catch (err) {
+    if (id !== runId) return;
+    const msg = err instanceof AECError ? err.message : 'No se pudo generar el contenido.';
+    console.error(err);
+    if (params.descripcion === EXAMPLE.descripcion) {
+      toast(`${msg} Se muestra el paquete de ejemplo.`, 'error');
+      await showBackup(params, true);
+    } else {
+      clearInterval(timer);
+      $('#result').innerHTML = `<div class="reveal">${banner('danger', `<strong>No se pudo generar.</strong> ${escapeHtml(msg)} Activa <strong>Modo respaldo</strong> para mostrar el paquete de ejemplo.`)}</div>`;
+      toast(msg, 'error');
+    }
+  } finally {
+    restore();
+  }
+  await rendersDone;
+});
+
+async function runRender(id, i) {
+  current.renders[i] = { status: 'pending' };
+  paintRender(i);
+  try {
+    const img = await generateImage({ prompt: renderPrompt(RENDER_VARIANTS[i]), images: [photo], aspectRatio: '4:3' });
+    if (id !== runId) return;
+    const blob = await (await fetch(`data:${img.mimeType};base64,${img.base64}`)).blob();
+    current.renders[i] = { status: 'ok', blob, url: URL.createObjectURL(blob), ms: Date.now() - current.t0 };
+  } catch (err) {
+    if (id !== runId) return;
+    console.error(err);
+    current.renders[i] = { status: 'error', error: err instanceof AECError ? err.message : 'No se pudo generar el render.' };
+  }
+  paintRender(i);
+}
+
+async function showBackup(params, auto) {
+  ++runId;
+  try {
+    const { content, photo: p } = await exampleAssets();
+    $('#despacho').value = params.despacho || EXAMPLE.despacho;
+    $('#descripcion').value = EXAMPLE.descripcion;
+    showPhoto(p);
+    const renders = await Promise.all(RENDER_VARIANTS.map(async (v, i) => {
+      const r = await fetch(`ejemplo/render-${i + 1}.jpg`);
+      if (!r.ok) return { status: 'error', error: 'Render de ejemplo no disponible.' };
+      const blob = await r.blob();
+      return { status: 'ok', blob, url: URL.createObjectURL(blob) };
+    }));
+    current = { params: { ...EXAMPLE, despacho: $('#despacho').value.trim() || EXAMPLE.despacho }, content, photo: p, renders, backup: true, auto };
+    render();
+  } catch (e) {
+    console.error(e);
+    toast('No se pudo cargar el paquete de ejemplo', 'error');
+  }
+}
+
+// ==========================================================================
+// Rendering
+// ==========================================================================
+
+let timer;
+function showLoading(t0) {
+  $('#empty').hidden = true;
+  const res = $('#result');
+  res.hidden = false;
+  res.innerHTML = `<div class="stack">
+    <div class="empty"><span class="scan" aria-hidden="true"></span><div class="scan-label">Generando…</div>
+      <p><strong>Claude está escribiendo; Gemini ya está generando los renders…</strong></p>
+      <p class="dim" style="font-family:var(--mono);font-size:.8rem"><span id="progress-secs">0 s</span> · <span id="progress-chars">leyendo la foto</span></p></div>
+    ${rendersSection()}
+  </div>`;
+  current.renders.forEach((_, i) => paintRender(i));
+  clearInterval(timer);
+  timer = setInterval(() => {
+    const el = $('#progress-secs');
+    if (!el) return clearInterval(timer);
+    el.textContent = `${Math.round((Date.now() - t0) / 1000)} s`;
+  }, 500);
+}
+
+function rendersSection() {
+  return `<div class="card out"><h3>3 renders del proyecto <span class="spacer"></span></h3>
+    <div class="renders">${RENDER_VARIANTS.map((v, i) => `<div class="render" id="render-${i}"></div>`).join('')}</div>
+    <p class="disclaimer" style="margin-top:8px">Imágenes conceptuales generadas por IA a partir de la foto. No son fotografías de la obra ni sustituyen el proyecto ejecutivo.</p></div>`;
+}
+
+function paintRender(i) {
+  const el = document.getElementById(`render-${i}`);
+  if (!el || !current) return;
+  const r = current.renders[i];
+  const v = RENDER_VARIANTS[i];
+  let frame;
+  if (r.status === 'ok') frame = `<img src="${r.url}" alt="Render ${escapeHtml(v.nombre)}"><span class="tag">Generado por IA</span>`;
+  else if (r.status === 'pending') frame = '<span><span class="scan sm" aria-hidden="true"></span><span class="scan-label">Generando…</span></span>';
+  else if (r.status === 'skip') frame = '<span>Sube una foto para generar renders.</span>';
+  else frame = `<span>! ${escapeHtml(r.error || 'Error')}</span>`;
+  el.innerHTML = `<div class="frame">${frame}</div>
+    <div class="label">${escapeHtml(v.nombre)}<span class="spacer"></span>
+      ${r.status === 'ok' ? `<button class="btn btn-sm btn-ghost" type="button" data-dl="${i}">Descargar</button>` : ''}
+      ${r.status === 'error' && current.photo && !current.backup ? `<button class="btn btn-sm btn-ghost" type="button" data-retry="${i}">Reintentar</button>` : ''}
+    </div>`;
+  el.querySelector('[data-dl]')?.addEventListener('click', () => downloadBlob(r.blob, `${slug(current.content?.titulo_proyecto || 'render')}-${slug(v.nombre)}.${r.blob.type.includes('png') ? 'png' : 'jpg'}`));
+  el.querySelector('[data-retry]')?.addEventListener('click', () => {
+    if (!hasGeminiKey()) { openSettings({ gemini: true }); return; }
+    runRender(runId, i);
+  });
+}
+
+const hashtags = (arr) => arr.map((h) => (h.startsWith('#') ? h : `#${h}`)).join(' ');
+
+function copyBtn(key) { return `<button class="btn btn-sm" type="button" data-copy="${key}">Copiar</button>`; }
+
+function render() {
+  clearInterval(timer);
+  const { params, content: c, photo: p } = current;
+  const initials = params.despacho.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+  $('#empty').hidden = true;
+  $('#result').hidden = false;
+  $('#result').innerHTML = `
+    <div class="stack reveal">
+      ${current.backup ? banner('warn', `<strong>Modo respaldo.</strong> Paquete de ejemplo pre-generado${current.auto ? ' (la API no respondió)' : ''}. La foto y la obra son de ejemplo, generadas por IA.`) : ''}
+      <div class="row no-print" style="align-items:center">
+        ${current.textMs ? `<span class="timer-badge">Textos en ${Math.round(current.textMs / 1000)} s</span>` : ''}
+        <strong>${escapeHtml(c.titulo_proyecto)}</strong>
+        <span class="spacer"></span>
+        <button class="btn btn-ghost" id="btn-new" type="button">Nuevo proyecto</button>
+      </div>
+
+      <div class="card out"><h3>Post de LinkedIn <span class="spacer"></span>${copyBtn('li')}</h3>
+        <div class="li-post">
+          <div class="li-head"><div class="li-avatar">${escapeHtml(initials)}</div><div><strong>${escapeHtml(params.despacho)}</strong><div class="dim" style="font-size:.75rem">Arquitectura · Querétaro</div></div></div>
+          <div class="li-text">${escapeHtml(c.linkedin.texto)}</div>
+          <div class="tags">${escapeHtml(hashtags(c.linkedin.hashtags))}</div>
+          ${p ? `<img class="li-img" src="${p.url}" alt="Foto de la obra">` : ''}
+        </div></div>
+
+      <div class="card out"><h3>Carrusel de Instagram · ${N_LAMINAS} láminas <span class="spacer"></span>
+          <button class="btn btn-sm btn-primary" type="button" id="btn-slides">Descargar láminas</button></h3>
+        <div class="strip" id="strip">${c.carrusel.laminas.map((l, i) => `<div class="slide"><canvas width="1080" height="1080" id="slide-${i}" aria-label="Lámina ${i + 1}: ${escapeHtml(l.titulo)}"></canvas>
+          <div class="dim" style="font-size:.75rem">${i + 1}/${c.carrusel.laminas.length} · ${escapeHtml(l.titulo)}</div></div>`).join('')}</div>
+        <div class="eyebrow" style="margin:12px 0 4px;display:flex;align-items:center;gap:8px">Caption <span class="spacer" style="flex:1"></span>${copyBtn('ig')}</div>
+        <div class="caption">${escapeHtml(c.carrusel.caption)}\n\n${escapeHtml(hashtags(c.carrusel.hashtags))}</div></div>
+
+      <div class="card out"><h3>Portafolio web <span class="spacer"></span>${copyBtn('web')}</h3>
+        <h2 style="margin:0 0 4px">${escapeHtml(c.portafolio.titulo)}</h2>
+        <p class="dim" style="margin:0 0 10px">${escapeHtml(c.portafolio.resumen)}</p>
+        ${c.portafolio.descripcion.map((t) => `<p>${escapeHtml(t)}</p>`).join('')}
+        ${c.portafolio.ficha.length ? `<dl class="ficha">${c.portafolio.ficha.map((f) => `<dt>${escapeHtml(f.etiqueta)}</dt><dd>${escapeHtml(f.valor)}</dd>`).join('')}</dl>` : ''}</div>
+
+      ${rendersSection()}
+      <p class="disclaimer">${escapeHtml(DISCLAIMER)}</p>
+    </div>`;
+
+  current.renders.forEach((_, i) => paintRender(i));
+  drawSlides().catch((e) => console.error(e));
+
+  const texts = {
+    li: `${c.linkedin.texto}\n\n${hashtags(c.linkedin.hashtags)}`,
+    ig: `${c.carrusel.caption}\n\n${hashtags(c.carrusel.hashtags)}`,
+    web: `${c.portafolio.titulo}\n${c.portafolio.resumen}\n\n${c.portafolio.descripcion.join('\n\n')}\n\n${c.portafolio.ficha.map((f) => `${f.etiqueta}: ${f.valor}`).join('\n')}`,
+  };
+  document.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', () => copyText(texts[b.dataset.copy])));
+  $('#btn-slides').addEventListener('click', downloadSlides);
+  $('#btn-new').addEventListener('click', () => {
+    ++runId;
+    current = null;
+    $('#result').hidden = true;
+    $('#empty').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    $('#descripcion').focus();
+  });
+  if (window.matchMedia('(max-width: 900px)').matches) $('#result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function copyText(text) {
+  try {
+    if (navigator.clipboard) await navigator.clipboard.writeText(text);
+    else {
+      // Plain HTTP (workshop server): no Clipboard API, fall back to execCommand.
+      const ta = Object.assign(document.createElement('textarea'), { value: text });
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    }
+    toast('Copiado', 'ok');
+  } catch { toast('No se pudo copiar', 'error'); }
+}
+
+// ---------- carousel slides (canvas, 1080×1080) ----------
+
+const INK = '#0a1836', ACCENT = '#0f2350', WASH = '#f4efe3'; // IGB navy / warm paper
+const FONT = 'Inter, system-ui, -apple-system, "Segoe UI", sans-serif';
+
+function wrap(ctx, text, maxW) {
+  const words = String(text).split(/\s+/);
+  const lines = [];
+  let line = '';
+  for (const w of words) {
+    const t = line ? `${line} ${w}` : w;
+    if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t;
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+function drawLines(ctx, lines, x, y, lh) { lines.forEach((l, i) => ctx.fillText(l, x, y + i * lh)); return y + lines.length * lh; }
+
+function loadImg(url) {
+  return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+}
+
+async function drawSlides() {
+  await document.fonts?.ready;
+  const { params, content: c, photo: p } = current;
+  const img = p ? await loadImg(p.url).catch(() => null) : null;
+  const n = c.carrusel.laminas.length;
+  c.carrusel.laminas.forEach((l, i) => {
+    const cv = document.getElementById(`slide-${i}`);
+    if (!cv) return;
+    const ctx = cv.getContext('2d');
+    const S = 1080, M = 90;
+    const first = i === 0, last = i === n - 1;
+    ctx.textBaseline = 'alphabetic';
+    if (first && img) {
+      const sc = Math.max(S / img.width, S / img.height);
+      const w = img.width * sc, h = img.height * sc;
+      ctx.drawImage(img, (S - w) / 2, (S - h) / 2, w, h);
+      const g = ctx.createLinearGradient(0, S * 0.25, 0, S);
+      g.addColorStop(0, 'rgba(15,20,25,0)'); g.addColorStop(0.45, 'rgba(15,20,25,.6)'); g.addColorStop(1, 'rgba(15,20,25,.92)');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+    } else {
+      ctx.fillStyle = last ? ACCENT : (i % 2 ? '#FFFFFF' : WASH);
+      ctx.fillRect(0, 0, S, S);
+    }
+    const onDark = (first && img) || last;
+    ctx.shadowColor = first && img ? 'rgba(0,0,0,.45)' : 'transparent';
+    ctx.shadowBlur = first && img ? 12 : 0;
+    const fg = onDark ? '#FFFFFF' : INK;
+    // top label
+    ctx.fillStyle = onDark ? 'rgba(255,255,255,.85)' : ACCENT;
+    ctx.font = `600 30px ${FONT}`;
+    ctx.fillText(params.despacho.toUpperCase(), M, M + 10);
+    ctx.textAlign = 'right';
+    ctx.fillText(`${String(i + 1).padStart(2, '0')} / ${String(n).padStart(2, '0')}`, S - M, M + 10);
+    ctx.textAlign = 'left';
+    // title + body
+    ctx.font = `800 ${first ? 84 : 72}px ${FONT}`;
+    const tl = wrap(ctx, l.titulo, S - 2 * M);
+    ctx.font = `400 42px ${FONT}`;
+    const bl = wrap(ctx, l.texto, S - 2 * M);
+    const tlh = first ? 96 : 84, blh = 58;
+    const block = tl.length * tlh + 40 + bl.length * blh;
+    let y = first && img ? S - 150 - block + tlh * 0.8 : (S - block) / 2 + tlh * 0.8;
+    if (!first) { ctx.fillStyle = onDark ? '#FFFFFF' : ACCENT; ctx.fillRect(M, y - tlh - 20, 90, 10); }
+    ctx.fillStyle = fg;
+    ctx.font = `800 ${first ? 84 : 72}px ${FONT}`;
+    y = drawLines(ctx, tl, M, y, tlh) + 40 - tlh + blh;
+    ctx.fillStyle = onDark ? 'rgba(255,255,255,.92)' : '#333';
+    ctx.font = `400 42px ${FONT}`;
+    drawLines(ctx, bl, M, y, blh);
+    // footer
+    ctx.fillStyle = onDark ? 'rgba(255,255,255,.7)' : '#6B6B6B';
+    ctx.font = `500 28px ${FONT}`;
+    ctx.fillText(last ? 'Escríbenos por mensaje directo →' : (i < n - 1 ? 'Desliza →' : ''), M, S - 60);
+  });
+}
+
+async function downloadSlides() {
+  const n = current.content.carrusel.laminas.length;
+  const base = slug(current.content.titulo_proyecto);
+  for (let i = 0; i < n; i++) {
+    const cv = document.getElementById(`slide-${i}`);
+    const blob = await new Promise((r) => cv.toBlob(r, 'image/png'));
+    downloadBlob(blob, `${base}-lamina-${i + 1}.png`);
+    await new Promise((r) => setTimeout(r, 250));
+  }
+}
+</script>
+</body>
+</html>

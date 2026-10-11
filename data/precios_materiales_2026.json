@@ -1,0 +1,14 @@
+{
+  "_meta": {"fuente": "CEICO-CMIC/INEGI vía Construction Supply Magazine", "fecha": "2026-07", "tier": 2, "refresh": "quarterly"},
+  "cemento_gris_bulto_50kg": {"min": 240, "max": 280, "unidad": "bulto"},
+  "cemento_tonelada": {"min": 3650, "max": 4000, "unidad": "ton"},
+  "mortero_tonelada": {"valor": 3300, "unidad": "ton"},
+  "varilla_corrugada_ton": {"min": 17500, "max": 21000, "unidad": "ton", "nota": "3/8\" ≈ 150 pzas/ton"},
+  "alambre_recocido_kg": {"valor": 33, "unidad": "kg"},
+  "alambron_kg": {"valor": 25, "unidad": "kg"},
+  "arena_grava_carro": {"valor": 2400, "unidad": "carro ~7m³"},
+  "block_concreto_15x20x40": {"min": 10, "max": 13, "unidad": "pza"},
+  "concreto_premezclado_m3_qro": {"min": 2100, "max": 2500, "unidad": "m³"},
+  "acero_refuerzo_kg_qro": {"min": 20, "max": 24, "unidad": "kg"},
+  "_inflacion_2025": {"materiales_promedio": 4.28, "cable_con_aislamiento": 17.49, "mano_obra": 5.98, "costo_vivienda": 4.52}
+}

@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visualizador · IGB AEC Suite</title>
+<link rel="icon" href="../../shared/img/logo_igb.png">
+<link rel="stylesheet" href="../../shared/css/aec-theme.css">
+<style>
+  .brief { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end; }
+  .brief textarea { font-size: 1.05rem; min-height: 64px; resize: vertical; }
+  .brief .field { margin: 0; }
+  .brief .actions { display: flex; flex-direction: column; gap: 8px; }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: stretch; }
+  .pane { display: flex; flex-direction: column; min-height: 460px; padding: 0; overflow: hidden; }
+  .pane-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .pane-head h2 { margin: 0; font-size: 1rem; }
+  .pane-body { flex: 1; display: grid; place-items: center; background: var(--navy); position: relative; min-height: 380px; }
+  .pane-foot { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-top: 1px solid var(--line); font-size: .8rem; color: var(--text-dim); min-height: 46px; flex-wrap: wrap; }
+  .pane-foot .btn { margin-left: auto; }
+  .pane-foot .btn + .btn { margin-left: 0; }
+
+  #plan-out { width: 100%; height: 100%; padding: 8px; display: grid; place-items: center; }
+  #plan-out svg { width: 100%; height: auto; max-height: 70vh; display: block; }
+  #render-out { width: 100%; height: 100%; display: grid; place-items: center; }
+  #render-out img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #render-out img, #plan-out svg { animation: reveal .45s cubic-bezier(.2, .7, .2, 1) both; }
+
+  .placeholder { text-align: center; color: var(--text-dim); padding: 24px; max-width: 360px; }
+  .placeholder .big { font-family: var(--mono); font-size: 1.6rem; color: var(--accent); margin-bottom: 8px; letter-spacing: .04em; }
+  .working { display: flex; flex-direction: column; align-items: center; gap: 12px; color: var(--accent); text-align: center; }
+  .working .t { font-family: var(--mono); font-size: .9rem; color: var(--text-dim); }
+  .working .step { font-family: var(--mono); font-size: .82rem; letter-spacing: .12em; text-transform: uppercase; }
+
+  .summary { font-size: .88rem; color: var(--text); }
+  .summary b { color: var(--heading); }
+  .notes { margin: 6px 0 0; padding-left: 18px; font-size: .82rem; color: var(--text-dim); }
+
+  /* backup switch — deliberately discreet */
+  .switch { display: inline-flex; align-items: center; gap: 8px; font-size: .78rem; color: var(--text-dim); cursor: pointer; user-select: none; }
+  .switch input { position: absolute; opacity: 0; pointer-events: none; }
+  .switch .track { width: 30px; height: 17px; border-radius: 999px; background: var(--line); position: relative; transition: background .15s; }
+  .switch .track::after { content: ''; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2); transition: transform .15s; }
+  .switch input:checked + .track { background: var(--accent); }
+  .switch input:checked + .track::after { transform: translateX(13px); }
+  .switch input:focus-visible + .track { outline: 2px solid var(--accent-lt); outline-offset: 2px; }
+  .srcmark { font-family: var(--mono); font-size: .7rem; color: var(--muted); }
+
+  .disclaimer-strong { font-size: .88rem; color: var(--heading); background: var(--surface-sunken); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 14px; text-align: center; }
+
+  @media (max-width: 900px) {
+    .split { grid-template-columns: 1fr; }
+    .brief { grid-template-columns: 1fr; }
+    .pane { min-height: 0; }
+    .pane-body { min-height: 280px; }
+  }
+</style>
+</head>
+<body>
+<div id="header"></div>
+
+<main class="container page stack">
+  <section id="presets" aria-label="Ejemplos precargados"></section>
+  <form id="form" class="card" autocomplete="off">
+    <div class="card-title"><h2 style="margin:0">Datos del proyecto</h2><span class="spacer"></span>
+      <button type="button" class="btn btn-sm btn-ghost" id="btn-example">Cargar ejemplo</button>
+    </div>
+    <div class="brief">
+      <div class="field">
+        <label for="desc">Describe el proyecto como te lo pidió el cliente</label>
+        <textarea id="desc" name="desc" rows="2" maxlength="600" required placeholder="Casa habitación de 180 m², dos niveles, fachada contemporánea, cochera para 2 autos…"></textarea>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="btn-go" type="submit" style="padding:12px 22px;font-size:1rem">Generar planta + fachada</button>
+      </div>
+    </div>
+  </form>
+
+  <div class="split">
+    <section class="card pane" aria-labelledby="h-plan">
+      <div class="pane-head"><span class="eyebrow">Claude</span><h2 id="h-plan">Planta arquitectónica</h2></div>
+      <div class="pane-body" aria-live="polite">
+        <div id="plan-out"><div class="placeholder"><div class="big">PLANTA</div>Planta acotada y etiquetada, dibujada a escala a partir de la descripción.</div></div>
+      </div>
+      <div class="pane-foot" id="plan-foot"></div>
+    </section>
+
+    <section class="card pane" aria-labelledby="h-render">
+      <div class="pane-head"><span class="eyebrow">Gemini</span><h2 id="h-render">Render de fachada</h2></div>
+      <div class="pane-body" aria-live="polite">
+        <div id="render-out"><div class="placeholder"><div class="big">FACHADA</div>Visualización fotorrealista del mismo proyecto, en contexto de Querétaro.</div></div>
+      </div>
+      <div class="pane-foot" id="render-foot"></div>
+    </section>
+  </div>
+
+  <p class="disclaimer-strong" id="disclaimer"></p>
+</main>
+
+<script type="module">
+import { generateJSON, hasClaudeKey } from '../../shared/js/claude-client.js';
+import { generateImage, hasGeminiKey } from '../../shared/js/gemini-client.js';
+import { appHeader, openSettings, escapeHtml, downloadBlob, slug, toast } from '../../shared/js/ui-components.js';
+import { SCHEMA, SYSTEM, DISCLAIMER, buildPrompt, buildRenderPrompt, EJEMPLOS_TEXTO, PRESETS, m2Objetivo } from './prompt.js';
+import { presetPicker } from '../../shared/js/presets.js';
+import { dibujarPlano } from './plan-svg.js';
+
+const $ = (s) => document.querySelector(s);
+const BACKUP_KEY = 'igb-aec.viz_respaldo';
+
+appHeader($('#header'), {
+  num: '02', title: 'Visualizador',
+  extra: `<label class="switch" title="Usa ejemplos pre-generados sin llamar a las APIs (tecla B)"><input type="checkbox" id="backup"><span class="track"></span>Modo respaldo</label>`,
+});
+// The shared header opens settings without the Gemini field; this tool needs both keys.
+const settingsBtn = document.querySelector('[data-action=settings]');
+settingsBtn.replaceWith(settingsBtn.cloneNode(true));
+document.querySelector('[data-action=settings]').addEventListener('click', () => openSettings({ gemini: true }));
+$('#disclaimer').textContent = DISCLAIMER;
+
+// ---------- backup examples (loaded lazily so the page paints fast) ----------
+let EJEMPLOS = null;
+async function ejemplos() {
+  if (!EJEMPLOS) EJEMPLOS = (await import('./respaldo.js')).EJEMPLOS.filter(Boolean);
+  return EJEMPLOS;
+}
+ejemplos().catch((e) => console.error('[visualizador] respaldo.js', e));
+
+const norm = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+/** Closest pre-generated example to the text (exact → keywords → m² → first). */
+async function closest(text) {
+  const list = await ejemplos();
+  const t = norm(text);
+  const exact = list.find((e) => norm(e.descripcion) === t.trim());
+  if (exact) return exact;
+  const score = (e) => {
+    const d = norm(e.descripcion);
+    let s = 0;
+    for (const w of ['campestre', 'terraza', 'dos niveles', '2 niveles', 'compacta', 'cochera doble', 'un auto', '3 recamaras', '2 recamaras']) {
+      if (t.includes(w) && d.includes(w)) s += 3;
+    }
+    const m1 = t.match(/(\d{2,4})\s*m/), m2 = d.match(/(\d{2,4})\s*m/);
+    if (m1 && m2) s += Math.max(0, 3 - Math.abs(m1[1] - m2[1]) / 40);
+    return s;
+  };
+  return [...list].sort((a, b) => score(b) - score(a))[0];
+}
+
+// ---------- backup toggle ----------
+const backup = $('#backup');
+try { backup.checked = localStorage.getItem(BACKUP_KEY) === '1'; } catch {}
+backup.addEventListener('change', () => { try { localStorage.setItem(BACKUP_KEY, backup.checked ? '1' : '0'); } catch {} });
+document.addEventListener('keydown', (e) => {
+  if (e.key.toLowerCase() !== 'b' || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName) && document.activeElement !== backup) return;
+  backup.checked = !backup.checked;
+  backup.dispatchEvent(new Event('change'));
+});
+
+// ---------- presets ----------
+const picker = presetPicker($('#presets'), { presets: PRESETS, onSelect: (p) => { $('#desc').value = p.text; $('#btn-go').focus({ preventScroll: true }); toast(`Ejemplo cargado: ${p.title}. Presiona Generar.`); } });
+// Workshop case (Casa 180 m², Cadereyta) — also the first pre-generated backup example.
+$('#btn-example').addEventListener('click', () => picker.select(PRESETS[0].id));
+
+// ---------- rendering helpers ----------
+function working(el, steps) {
+  const t0 = performance.now();
+  el.innerHTML = `<div class="working"><span class="scan sm" aria-hidden="true"></span><span class="step"></span><span class="t">0 s</span></div>`;
+  const stepEl = el.querySelector('.step'), tEl = el.querySelector('.t');
+  const tick = () => {
+    const s = (performance.now() - t0) / 1000;
+    tEl.textContent = `${s.toFixed(0)} s`;
+    stepEl.textContent = [...steps].reverse().find(([at]) => s >= at)?.[1] ?? steps[0][1];
+  };
+  tick();
+  const id = setInterval(tick, 250);
+  return { stop: () => clearInterval(id), elapsed: () => (performance.now() - t0) / 1000 };
+}
+
+let lastPlan = null, lastRender = null;
+
+function showPlan(plano, { seconds, source }) {
+  const d = dibujarPlano(plano);
+  lastPlan = { svg: d.svg, titulo: plano.titulo };
+  $('#plan-out').innerHTML = d.svg;
+  const niveles = plano.niveles.length;
+  // Precision check: built area vs. what the client asked for.
+  const obj = m2Objetivo($('#desc').value);
+  const dev = obj ? (d.areaTotal - obj) / obj : 0;
+  const metaNote = obj ? ` · meta ${obj} m² <span style="color:${Math.abs(dev) <= 0.15 ? 'var(--ok)' : 'var(--warn)'}">(${dev >= 0 ? '+' : ''}${Math.round(dev * 100)} %)</span>` : '';
+  $('#plan-foot').innerHTML = `
+    <div class="summary"><b>${escapeHtml(plano.titulo)}</b> · terreno ${d.terreno.frente} × ${d.terreno.fondo} m · ${d.areaTotal.toFixed(0)} m² techados${niveles > 1 ? ` en ${niveles} niveles` : ''}${metaNote} · ${seconds.toFixed(0)} s <span class="srcmark" title="${source === 'api' ? 'Generado en vivo' : 'Ejemplo precargado'}">${source === 'api' ? '●' : '○'}</span></div>
+    <button class="btn btn-sm" type="button" id="dl-svg">Descargar SVG</button>`;
+  $('#dl-svg').onclick = () => downloadBlob(new Blob([lastPlan.svg], { type: 'image/svg+xml' }), `planta-${slug(lastPlan.titulo)}.svg`);
+  if (d.avisos.length) console.warn('[visualizador] avisos de geometría', d.avisos);
+}
+
+function showRender(img, { seconds, source }) {
+  const url = `data:${img.mimeType};base64,${img.base64}`;
+  lastRender = img;
+  $('#render-out').innerHTML = `<img alt="Render conceptual de la fachada" src="${url}">`;
+  $('#render-foot').innerHTML = `
+    <div class="summary">Render conceptual · ${seconds.toFixed(0)} s <span class="srcmark" title="${source === 'api' ? 'Generado en vivo' : 'Ejemplo precargado'}">${source === 'api' ? '●' : '○'}</span></div>
+    <button class="btn btn-sm" type="button" id="dl-img">Descargar imagen</button>`;
+  $('#dl-img').onclick = async () => {
+    const blob = await (await fetch(url)).blob();
+    downloadBlob(blob, `fachada.${img.mimeType.includes('png') ? 'png' : 'jpg'}`);
+  };
+}
+
+const PLAN_STEPS = [[0, 'Leyendo el programa arquitectónico…'], [4, 'Distribuyendo espacios en el terreno…'], [12, 'Resolviendo circulaciones y accesos…'], [22, 'Acotando y rotulando la planta…']];
+const RENDER_STEPS = [[0, 'Componiendo la fachada…'], [6, 'Materiales y luz de Querétaro…'], [14, 'Afinando el render…']];
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// ---------- main ----------
+let running = false;
+$('#form').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  if (running) return;
+  const text = $('#desc').value.trim();
+  if (!text) { $('#desc').focus(); return; }
+
+  const useBackup = backup.checked;
+  if (!useBackup && (!hasClaudeKey() || !hasGeminiKey())) {
+    const saved = await openSettings({ gemini: true });
+    if (!saved && !hasClaudeKey() && !hasGeminiKey()) return;
+  }
+
+  running = true;
+  const btn = $('#btn-go');
+  btn.disabled = true;
+  $('#plan-foot').innerHTML = ''; $('#render-foot').innerHTML = '';
+  const wp = working($('#plan-out'), PLAN_STEPS);
+  const wr = working($('#render-out'), RENDER_STEPS);
+
+  const planTask = (async () => {
+    if (!useBackup && hasClaudeKey()) {
+      try {
+        const { data } = await generateJSON({ system: SYSTEM, prompt: buildPrompt(text), schema: SCHEMA, effort: 'low', maxTokens: 32000, geminiModels: ['gemini-3.5-flash', 'gemini-3.1-pro-preview'] });
+        if (!data?.niveles?.some((n) => n.espacios?.length)) throw new Error('plano vacío');
+        wp.stop(); showPlan(data, { seconds: wp.elapsed(), source: 'api' });
+        return;
+      } catch (err) { console.error('[visualizador] plano → respaldo', err); }
+    }
+    const ej = await closest(text);
+    await sleep(Math.max(0, 7000 + Math.random() * 5000 - wp.elapsed() * 1000));
+    wp.stop(); showPlan(ej.plano, { seconds: wp.elapsed(), source: 'respaldo' });
+  })();
+
+  const renderTask = (async () => {
+    if (!useBackup && hasGeminiKey()) {
+      try {
+        const img = await generateImage({ prompt: buildRenderPrompt(text), aspectRatio: '16:9' });
+        wr.stop(); showRender(img, { seconds: wr.elapsed(), source: 'api' });
+        return;
+      } catch (err) { console.error('[visualizador] render → respaldo', err); }
+    }
+    const ej = await closest(text);
+    await sleep(Math.max(0, 5000 + Math.random() * 4000 - wr.elapsed() * 1000));
+    wr.stop(); showRender(ej.render, { seconds: wr.elapsed(), source: 'respaldo' });
+  })();
+
+  try { await Promise.allSettled([planTask, renderTask]); }
+  finally { running = false; btn.disabled = false; }
+});
+</script>
+</body>
+</html>

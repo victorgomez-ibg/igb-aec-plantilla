@@ -88,6 +88,6 @@ Al final:
 - Corre `git diff --stat` y `git diff CLAUDE.md shared/css/aec-theme.css` y resume en una tabla
   corta: archivo → qué cambió (valor anterior → valor nuevo en los colores).
 - Pide que lo revise: `python3 -m http.server 8700` (Windows: `python -m http.server 8700`),
-  abrir `http://localhost:8700/` y recargar sin caché (**Ctrl+F5** / **Cmd+Mayús+R**).
+  abrir `http://localhost:8700/` y recargar sin caché (**Ctrl + F5** (Windows) o **Comando + Mayús + R** (Mac)).
 - Explica cómo deshacer: `git restore <archivo>` antes de confirmar.
 - **No hagas commit.** Si quiere guardarlo y publicarlo, que use `/publicar`.

@@ -5,7 +5,7 @@
   (si usas un término técnico, explícalo en una línea).
 - **Explica qué vas a hacer y por qué antes de actuar.** Un cambio a la vez.
 - Después de cada cambio, pide al usuario que lo revise en el navegador recargando sin caché:
-  **Ctrl+F5** (Windows) o **Cmd+Mayús+R** (Mac).
+  **Ctrl + F5** (Windows) o **Comando + Mayús + R** (Mac).
 
 ## Qué es este proyecto
 - Sitio **estático**: HTML, CSS y JavaScript con módulos ES. **Sin backend, sin build, sin npm install.**

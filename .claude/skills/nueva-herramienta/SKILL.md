@@ -82,6 +82,6 @@ en el arreglo `TOOLS`:
    agrega su `*.test.mjs` con casos verificados a mano.
 2. Pide que lo abra: `python3 -m http.server 8700` (Windows: `python -m http.server 8700`) →
    `http://localhost:8700/`, que la tarjeta aparezca y que la herramienta funcione. Recargar sin caché:
-   **Ctrl+F5** / **Cmd+Mayús+R**.
+   **Ctrl + F5** (Windows) o **Comando + Mayús + R** (Mac).
 3. Muestra `git status` con la lista de archivos nuevos y modificados.
 4. **No hagas commit** aquí. Para guardar y publicar, que use `/publicar`.

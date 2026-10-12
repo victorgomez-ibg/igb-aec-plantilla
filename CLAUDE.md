@@ -49,5 +49,14 @@
 3. El ícono `'06'` ya existe en `shared/js/icons.js`.
 4. Si la herramienta usa Gemini, abrir Ajustes con `openSettings({ gemini: true })` (como 02 y 04).
 
+## Comandos del kit
+Skills del proyecto en `.claude/skills/`; se escriben en el chat de Claude Code:
+- `/mi-despacho`: entrevista breve y personaliza el kit (sección «Mi despacho» aquí, colores y logo).
+- `/nueva-herramienta`: pregunta qué problema resuelve y crea `tools/NN-nombre/` con la tarjeta en el launcher.
+- `/publicar`: revisa claves, pruebas y enlaces; commit, push (con confirmación) y guía de Netlify.
+
+Personalizar a mano: **este archivo (CLAUDE.md) es la memoria** de Claude sobre tu despacho y tus reglas;
+**`shared/css/aec-theme.css`** (bloque `:root`) tiene tus colores; el logo es `shared/img/logo_igb.png`.
+
 ## Resultados
 - Todo lo que genera el kit es **de referencia**. Nada sustituye la validación del responsable del proyecto.

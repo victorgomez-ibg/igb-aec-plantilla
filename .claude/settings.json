@@ -5,7 +5,13 @@
       "Bash(git diff:*)",
       "Bash(git log:*)",
       "Bash(python3 -m http.server:*)",
-      "Bash(python -m http.server:*)"
+      "Bash(python -m http.server:*)",
+      "Bash(git grep:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git remote -v)",
+      "Bash(git branch --show-current)",
+      "Bash(npm test)",
+      "Bash(node --test:*)"
     ],
     "deny": [
       "Bash(git push --force:*)",

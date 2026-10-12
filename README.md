@@ -27,6 +27,19 @@ CLAUDE.md    contexto para Claude Code (quién eres, reglas del kit)
 
 Sin build, sin dependencias: HTML + módulos ES. Las librerías ya están en `shared/vendor/`.
 
+## Comandos del kit
+
+Abre Claude Code en la carpeta del repo y escribe uno de estos comandos (skills en `.claude/skills/`):
+
+| Comando | Qué hace |
+|---|---|
+| `/mi-despacho` | Te entrevista (nombre, ciudad, especialidad, colores, logo, tono) y personaliza el kit. |
+| `/nueva-herramienta` | Pregunta qué problema resuelve y crea `tools/NN-nombre/` con su tarjeta en el launcher. |
+| `/publicar` | Revisa que no haya claves, que pasen las pruebas y que no haya enlaces rotos; commit, push (te pide confirmación) y guía de Netlify. |
+
+Para personalizar a mano: `CLAUDE.md` es la **memoria** de Claude (quién eres, tu despacho, reglas del kit)
+y `shared/css/aec-theme.css` (bloque `:root`) tiene tus **colores**. El logo es `shared/img/logo_igb.png`.
+
 ## Abrir en local
 
 Las páginas usan módulos ES y `fetch()`, así que deben servirse por HTTP (no con `file://`):

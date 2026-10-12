@@ -21,6 +21,8 @@ demo/        launcher con las tarjetas de las herramientas
 tools/       una carpeta por herramienta, cada una con su index.html
 shared/      tema, clientes de IA, cálculo, exportación PDF/Excel, librerías
 data/        datos técnicos en JSON (ver data/SOURCES.md)
+CLAUDE.md    contexto para Claude Code (quién eres, reglas del kit)
+.claude/     settings.json con permisos: bloquea push --force, reset --hard y rm -rf
 ```
 
 Sin build, sin dependencias: HTML + módulos ES. Las librerías ya están en `shared/vendor/`.
@@ -53,8 +55,8 @@ El `.gitignore` excluye `.env`, `*.pem` y `node_modules/` por si acaso.
 
 ## Cómo agregar la tarjeta 06
 
-1. Crea `tools/06-mi-herramienta/index.html`. Copia la estructura de `tools/03-propuestas/index.html`
-   (usa `../../shared/...` para el tema, `ui-components.js` y `claude-client.js`).
+1. Crea `tools/06-mi-herramienta/index.html`. Sigue el patrón de `tools/05-factibilidad/index.html`
+   (usa `../../shared/...` para el tema, `ui-components.js` y, si llamas a la IA, `claude-client.js`).
 2. En `demo/index.html`, busca el bloque comentado «HUECO PARA LA HERRAMIENTA 06» dentro de `TOOLS`,
    descomenta la entrada y ajusta `title`, `url`, `desc` y `hook`.
 3. El ícono ya existe: `shared/js/icons.js` trae `'06'` (recuadro punteado con «+»). Puedes cambiar su trazo
